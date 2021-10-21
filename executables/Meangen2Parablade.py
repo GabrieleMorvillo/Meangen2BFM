@@ -97,7 +97,7 @@ class Meangen2Parablade:
         HOME = os.environ["M2BFM"]
 
         # Running Meangen from input file and storing process report in an output file.
-        os.system("Meangen.exe < "+HOME+"templates/input > Output")
+        os.system("meangen.exe < "+HOME+"templates/input > Output")
         print("Done!")
         print("Meangen took "+str(time.time() - start_time) + " seconds")
 

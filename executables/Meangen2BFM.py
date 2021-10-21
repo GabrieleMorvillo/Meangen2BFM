@@ -1,4 +1,4 @@
-#!/home/evert/anaconda3/bin/python3
+#!/usr/bin/python3
 
 # --------------------------------------------------------------------------------------------------------------- #
 # This code serves the purpose of using general engineering inputs for axial turbomachinery design and translate them
@@ -30,19 +30,20 @@ from dataPlotter import axial_data_plotter
 
 # Reading input file
 DIR = os.getcwd() + '/'
-try:
-    INFile = DIR + sys.argv[-1]
-except:
-    INFile = DIR + 'M2P.cfg'      # Default File name
-try:
-    IN = ReadUserInput(INFile)
-except:
-    raise Exception('\n\n\n''Something went wrong when reading the configuration file,exiting the program...'
-                    '\n\nTo call MakeBlade.py from terminal type:'
-                    '\n\tMakeBlade.py <configuration file name>')
+# try:
+#     INFile = DIR + sys.argv[-1]
+# except:
+#     INFile = DIR + 'M2P.cfg'      # Default File name
+# try:
+#     IN = ReadUserInput(INFile)
+# except:
+#     raise Exception('\n\n\n''Something went wrong when reading the configuration file,exiting the program...'
+#                     '\n\nTo call MakeBlade.py from terminal type:'
+#                     '\n\tMakeBlade.py <configuration file name>')
 t_start = time.time()
 
-
+INFile = DIR + 'templates/M2P.cfg'
+IN = ReadUserInput(INFile)
 # Executing Meangen and writing Parablade input files.
 M = Meangen2Parablade(IN)
 
@@ -112,44 +113,44 @@ for i in range(n_stage):
 # The individual 2D meshes are combined into a full machine mesh. In case the dimension number is 3 and a BFM mesh is
 # desired, a suitable 3D mesh will be written. This option is currently not yet available for physical blades.
 
-if BFM:
-    # Writing BFM input file suitable for SU2 BFM analysis.
-    print("Writing Body-force SU2 input file...", end='     ')
-    writeBFMinput(M)
-    print("Done!")
+# if BFM:
+#     # Writing BFM input file suitable for SU2 BFM analysis.
+#     print("Writing Body-force SU2 input file...", end='     ')
+#     writeBFMinput(M)
+#     print("Done!")
 
-    # Writing 3D BFM mesh or combining individual 2D blade row meshes depending on case dimension.
-    if IN['N_dim'][0] == 3:
-        print("Writing 3D BFM mesh:...")
-        Gmesh3D(M, IN)
-        print("Done!")
-    else:
-        print("Writing 2D BFM mesh...", end='     ')
-        Gmesh2D(M, IN)
-        print("Done!")
+#     # Writing 3D BFM mesh or combining individual 2D blade row meshes depending on case dimension.
+#     if IN['N_dim'][0] == 3:
+#         print("Writing 3D BFM mesh:...")
+#         Gmesh3D(M, IN)
+#         print("Done!")
+#     else:
+#         print("Writing 2D BFM mesh...", end='     ')
+#         Gmesh2D(M, IN)
+#         print("Done!")
 
-#
-if Blade:
-    if IN['N_dim'][0] == 3:
-        print("3D physical blade meshing is not yet implemented!")
-    else:
-        os.chdir(DIR)
-        print("Writing 2D Blade analysis SU2 machine mesh file...", end='     ')
-        writeStageMesh_Blade(M)
-        print("Done!")
-print("Total geometry and mesh generation took "+str(format(time.time() - t_start, ".2f")) + " seconds")
-writeSU2input(IN)
+# #
+# if Blade:
+#     if IN['N_dim'][0] == 3:
+#         print("3D physical blade meshing is not yet implemented!")
+#     else:
+#         os.chdir(DIR)
+#         print("Writing 2D Blade analysis SU2 machine mesh file...", end='     ')
+#         writeStageMesh_Blade(M)
+#         print("Done!")
+# print("Total geometry and mesh generation took "+str(format(time.time() - t_start, ".2f")) + " seconds")
+# writeSU2input(IN)
 
-if IN["SOLVE"] == 'AUTOMATIC':
-    print("Solving...")
-    os.system("SU2_CFD BFM_comp.cfg")
+# if IN["SOLVE"] == 'AUTOMATIC':
+#     print("Solving...")
+#     os.system("SU2_CFD BFM_comp.cfg")
 
-if IN["POSTPROCESS"] == 'YES':
-    print("Postprocessing simulation data....")
-    os.system("pvpython "+HOME+"executables/ParaviewPost.py "+INFile)
-    print("done!")
-    print("Creating data plots...")
-    axial_data_plotter()
-    print("Done!")
+# if IN["POSTPROCESS"] == 'YES':
+#     print("Postprocessing simulation data....")
+#     os.system("pvpython "+HOME+"executables/ParaviewPost.py "+INFile)
+#     print("done!")
+#     print("Creating data plots...")
+#     axial_data_plotter()
+#     print("Done!")
 
-print("Total processing time: " + str(time.time() - t_start))
+# print("Total processing time: " + str(time.time() - t_start))
