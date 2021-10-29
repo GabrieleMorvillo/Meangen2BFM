@@ -47,10 +47,22 @@ class ICEM3D:
         # self.model.add("3DBFM")
 
         # Write the initial paragraph for the replay file
+        f = open("ICEM_input.txt", "w")
 
+        #set project file directory
+        f.write("ic_chdir C:/Users/GMrx1/Desktop/ANSYS_WORKS/lecture1\n")
 
-
-
+        # set the settings
+        f.write("ic_set_global geo_cad 0 toptol_userset\n")
+        f.write("ic_set_global geo_cad 0.0 toler\n")
+        f.write("ic_set_meshing_params global 0\n")
+        f.write("ic_set_global geo_cad 1 toptol_userset\n")
+        f.write("ic_set_meshing_params global 0 gttol 1E-9 gtrel 1\n")
+        f.write("ic_regenerate_tris\n")
+        f.write("ic_geo_set_units {}\n")
+        f.write("ic_set_global geo_cad 1 toptol_userset\n")
+        f.write("ic_set_meshing_params global 0 gttol 9.9999997e-10 gtrel 1\n")
+        f.write("ic_geo_set_units {}\n")
 
 
         # Creating all the mesh points.
@@ -84,6 +96,8 @@ class ICEM3D:
         # print("Building periodic mesh...")
         # self.makePerio()
         # print("Done!")
+
+        f.close()
 
     #     # In case of selection of mesh visualization option, the gmesh GUI will display the 3D BFM mesh.
     #     if IN["PLOT_MESH"] == 'YES':
@@ -418,3 +432,14 @@ class ICEM3D:
         #     self.factory.addPoint(X_shroud[i], Y_shroud[i], Z_shroud[i], 0.01, points_shroud[i])
 
         # Write the replay procedure for the points
+
+        # Writing the hub and shroud points in ICEM .rep file
+        f.write("ic_geo_new_family GEOM\n")
+        f.write("ic_boco_set_part_color GEOM\n")
+        f.write("ic_empty_tetin\n")
+        for i in range(len(X_hub)):
+            f.write("ic_point {} GEOM pnt."+str(i)+" "+str(X_hub[i])+","+str(Y_hub[i])+","+str(Z_hub[i])+"\n")
+        for i in range(len(X_hub)):
+            f.write("ic_point {} GEOM pnt."+str(i)+" "+str(X_shroud[i])+","+str(Y_shroud[i])+","+str(Z_shroud[i])+"\n")
+
+ 
