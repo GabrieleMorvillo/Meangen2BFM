@@ -1,0 +1,26 @@
+ic_chdir C:/Users/GMrx1/Desktop/ANSYS_WORKS/lecture1
+ic_set_global geo_cad 0 toptol_userset
+ic_set_global geo_cad 0.0 toler
+ic_set_meshing_params global 0
+ic_set_global geo_cad 1 toptol_userset
+ic_set_meshing_params global 0 gttol 1E-9 gtrel 1
+ic_regenerate_tris
+ic_geo_set_units {}
+ic_set_global geo_cad 1 toptol_userset
+ic_set_meshing_params global 0 gttol 9.9999997e-10 gtrel 1
+ic_geo_set_units {}
+ic_geo_new_family GEOM
+ic_boco_set_part_color GEOM
+ic_empty_tetin
+hub ic_point {} GEOM pnt.0 0.0018409237491304703,0.2109489674038484,-0.10468899999999999
+hub ic_point {} GEOM pnt.1 0.0018409237491304703,0.2109489674038484,-0.001409
+hub ic_point {} GEOM pnt.2 0.0020690266605224664,0.23708697211082277,0.050231
+hub ic_point {} GEOM pnt.3 0.00207297978110323,0.23753995486197085,0.054999
+hub ic_point {} GEOM pnt.4 0.0020853191022979305,0.23895390102118358,0.105005
+hub ic_point {} GEOM pnt.5 0.0020853191022979305,0.23895390102118358,0.205017
+shroud ic_point {} GEOM pnt.6 0.0051403046495686775,0.5890205710474886,-0.10468899999999999
+shroud ic_point {} GEOM pnt.7 0.0051403046495686775,0.5890205710474886,-0.001408
+shroud ic_point {} GEOM pnt.8 0.004912201738176681,0.5628825663405143,0.050232
+shroud ic_point {} GEOM pnt.9 0.0049082486175959185,0.5624295835893662,0.054999
+shroud ic_point {} GEOM pnt.10 0.004895909296401217,0.5610156374301535,0.105005
+shroud ic_point {} GEOM pnt.11 0.004895909296401217,0.5610156374301535,0.205017
