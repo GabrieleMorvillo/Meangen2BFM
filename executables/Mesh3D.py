@@ -327,7 +327,7 @@ class Gmesh3D:
         # Setting the revolution volume as a 3D physical group.
         self.model.addPhysicalGroup(3, [1], 1)
         self.model.setPhysicalName(3, 1, "FlowField")
-        self.model.setColor((3, 1), 0, 0, 0)
+        # self.model.setColor((3, 1), 255, 102, 0)
         # Going over the other surfaces of the revolution volume and naming them accordingly.
         i = 2
 
