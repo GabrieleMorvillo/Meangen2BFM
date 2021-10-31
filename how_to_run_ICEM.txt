@@ -1,0 +1,6 @@
+# Type the following in the cmd prompt
+
+chdir C:\Users\GMrx1\Desktop\ANSYS_WORKS\creazione geometria
+
+set PATH=%PATH%;C:\Program Files\ANSYS Inc\v195\icemcfd\win64_amd\bin
+icemcfd.bat -batch ICEM_input.rpl
