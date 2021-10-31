@@ -70,7 +70,7 @@ class ICEM3D:
         self.makePoints()
 
         #  #Connecting the mesh points to create lines.
-        # self.makeLines()
+        self.makeLines()
 
         # # Making periodic plane.
         # self.makePlane()
@@ -271,46 +271,67 @@ class ICEM3D:
     #     # Building the plane surface in GMesh
     #     self.factory.addPlaneSurface([1], 1)
 
-    # def makeLines(self):
-    #     # This function connects the points defined in makePoints to form lines.
+    def makeLines(self):
+        # This function connects the points defined in makePoints to form lines.
 
-    #     # Empty lists for the line identifiers.
-    #     lines_hub = []
-    #     length_hub = []
-    #     lines_shroud = []
-    #     length_shroud = []
-    #     lines_rad = []
-    #     length_rad = []
-    #     i_line = 1
+        # Empty lists for the line identifiers.
+        lines_hub = []
+        length_hub = []
+        lines_shroud = []
+        length_shroud = []
+        lines_rad = []
+        length_rad = []
+        i_line = 1
+        # i_point = 1
+        f = open("ICEM_input.txt", "a")
 
-    #     # Looping through the hub and shroud points to build lines defining the hub and shroud shape.
-    #     for i in range(len(self.points_hub)-1):
-    #         self.factory.addLine(self.points_hub[i], self.points_hub[i+1], i_line)
-    #         lines_hub.append(i_line)
-    #         length_hub.append(np.sqrt(np.sum(np.array(self.coords_hub[:, i+1] - self.coords_hub[:, i])**2)))
-    #         i_line += 1
-    #     for i in range(len(self.points_shroud)-1):
-    #         self.factory.addLine(self.points_shroud[i], self.points_shroud[i+1], i_line)
-    #         lines_shroud.append(i_line)
-    #         length_shroud.append(np.sqrt(np.sum(np.array(self.coords_shroud[:, i + 1] - self.coords_shroud[:, i]) ** 2)))
-    #         i_line += 1
+        # Looping through the hub and shroud points to build lines defining the hub and shroud shape.
+        for i in range(len(self.points_hub)-1):
+            # self.factory.addLine(self.points_hub[i], self.points_hub[i+1], i_line)
+            f.write("ic_delete_geometry curve names crv."+str(i_line)+" 0\n")
+            f.write("ic_curve point GEOM crv."+str(i_line)+" {pnt."+str(self.points_hub[i])+" pnt."+str(self.points_hub[i+1])+"}\n")
+            lines_hub.append(i_line)
+            length_hub.append(np.sqrt(np.sum(np.array(self.coords_hub[:, i+1] - self.coords_hub[:, i])**2)))
+            i_line += 1
+            # i_point += 1
+        for i in range(len(self.points_shroud)-1):
+            # self.factory.addLine(self.points_shroud[i], self.points_shroud[i+1], i_line)
+            f.write("ic_delete_geometry curve names crv."+str(i_line)+" 0\n")
+            f.write("ic_curve point GEOM crv."+str(i_line)+" {pnt."+str(self.points_hub[i])+" pnt."+str(self.points_hub[i+1])+"}\n")
+            lines_shroud.append(i_line)
+            length_shroud.append(np.sqrt(np.sum(np.array(self.coords_shroud[:, i + 1] - self.coords_shroud[:, i]) ** 2)))
+            i_line += 1
 
-    #     # Looping through the points in axial direction to build lines in radial direction. These will be used for the
-    #     # definition of the inlet and outlet and refinement along the blade leading and trailing edges.
-    #     for i in range(len(self.points_hub)):
-    #         self.factory.addLine(self.points_hub[i], self.points_shroud[i], i_line)
-    #         lines_rad.append(i_line)
-    #         length_rad.append(np.sqrt(np.sum(np.array(self.coords_shroud[:, i] - self.coords_hub[:, i]) ** 2)))
-    #         i_line += 1
+        # Looping through the points in axial direction to build lines in radial direction. These will be used for the
+        # definition of the inlet and outlet and refinement along the blade leading and trailing edges.
+        for i in range(len(self.points_hub)):
+            # self.factory.addLine(self.points_hub[i], self.points_shroud[i], i_line)
+            f.write("ic_delete_geometry curve names crv."+str(i_line)+" 0\n")
+            f.write("ic_curve point GEOM crv."+str(i_line)+" {pnt."+str(self.points_hub[i])+" pnt."+str(self.points_shroud[i])+"}\n")
+            lines_rad.append(i_line)
+            length_rad.append(np.sqrt(np.sum(np.array(self.coords_shroud[:, i] - self.coords_hub[:, i]) ** 2)))
+            i_line += 1
 
-    #     # Storing the line identifiers and line lengths into the class.
-    #     self.lines_hub = lines_hub
-    #     self.lines_shroud = lines_shroud
-    #     self.lines_rad = lines_rad
 
-    #     self.length_hub = length_hub
-    #     self.length_shroud = length_shroud
-    #     self.length_rad = length_rad
+        f.close()
+ 
+
+        # Storing the line identifiers and line lengths into the class.
+        self.lines_hub = lines_hub
+        self.lines_shroud = lines_shroud
+        self.lines_rad = lines_rad
+
+        self.length_hub = length_hub
+        self.length_shroud = length_shroud
+        self.length_rad = length_rad
+
+
+
+
+
+
+
+
 
     def makePoints(self):
         # This function defines the coordinates for the points defining the annulus shape and registers them in GMesh
@@ -440,11 +461,11 @@ class ICEM3D:
         f.write("ic_geo_new_family GEOM\n")
         f.write("ic_boco_set_part_color GEOM\n")
         f.write("ic_empty_tetin\n")
-        ii=0
+        i_point=1
         for i in range(len(X_hub)):
-            f.write("hub ic_point {} GEOM pnt."+str(i)+" "+str(X_hub[i])+","+str(Y_hub[i])+","+str(Z_hub[i])+"\n")
-            ii=ii+1
+            f.write("ic_point {} GEOM pnt."+str(i_point)+" "+str(X_hub[i])+","+str(Y_hub[i])+","+str(Z_hub[i])+"\n")
+            i_point=i_point+1
         for j in range(len(X_hub)):
-            f.write("shroud ic_point {} GEOM pnt."+str(ii+j)+" "+str(X_shroud[j])+","+str(Y_shroud[j])+","+str(Z_shroud[j])+"\n")
+            f.write("ic_point {} GEOM pnt."+str(i_point+j)+" "+str(X_shroud[j])+","+str(Y_shroud[j])+","+str(Z_shroud[j])+"\n")
         f.close()
  

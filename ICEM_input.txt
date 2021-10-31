@@ -12,15 +12,47 @@ ic_geo_set_units {}
 ic_geo_new_family GEOM
 ic_boco_set_part_color GEOM
 ic_empty_tetin
-hub ic_point {} GEOM pnt.0 0.0018409237491304703,0.2109489674038484,-0.10468899999999999
-hub ic_point {} GEOM pnt.1 0.0018409237491304703,0.2109489674038484,-0.001409
-hub ic_point {} GEOM pnt.2 0.0020690266605224664,0.23708697211082277,0.050231
-hub ic_point {} GEOM pnt.3 0.00207297978110323,0.23753995486197085,0.054999
-hub ic_point {} GEOM pnt.4 0.0020853191022979305,0.23895390102118358,0.105005
-hub ic_point {} GEOM pnt.5 0.0020853191022979305,0.23895390102118358,0.205017
-shroud ic_point {} GEOM pnt.6 0.0051403046495686775,0.5890205710474886,-0.10468899999999999
-shroud ic_point {} GEOM pnt.7 0.0051403046495686775,0.5890205710474886,-0.001408
-shroud ic_point {} GEOM pnt.8 0.004912201738176681,0.5628825663405143,0.050232
-shroud ic_point {} GEOM pnt.9 0.0049082486175959185,0.5624295835893662,0.054999
-shroud ic_point {} GEOM pnt.10 0.004895909296401217,0.5610156374301535,0.105005
-shroud ic_point {} GEOM pnt.11 0.004895909296401217,0.5610156374301535,0.205017
+ic_point {} GEOM pnt.1 0.0018409237491304703,0.2109489674038484,-0.10468899999999999
+ic_point {} GEOM pnt.2 0.0018409237491304703,0.2109489674038484,-0.001409
+ic_point {} GEOM pnt.3 0.0020690266605224664,0.23708697211082277,0.050231
+ic_point {} GEOM pnt.4 0.00207297978110323,0.23753995486197085,0.054999
+ic_point {} GEOM pnt.5 0.0020853191022979305,0.23895390102118358,0.105005
+ic_point {} GEOM pnt.6 0.0020853191022979305,0.23895390102118358,0.205017
+ic_point {} GEOM pnt.7 0.0051403046495686775,0.5890205710474886,-0.10468899999999999
+ic_point {} GEOM pnt.8 0.0051403046495686775,0.5890205710474886,-0.001408
+ic_point {} GEOM pnt.9 0.004912201738176681,0.5628825663405143,0.050232
+ic_point {} GEOM pnt.10 0.0049082486175959185,0.5624295835893662,0.054999
+ic_point {} GEOM pnt.11 0.004895909296401217,0.5610156374301535,0.105005
+ic_point {} GEOM pnt.12 0.004895909296401217,0.5610156374301535,0.205017
+ic_delete_geometry curve names crv.1 0
+ic_curve point GEOM crv.1 {pnt.1 pnt.2}
+ic_delete_geometry curve names crv.2 0
+ic_curve point GEOM crv.2 {pnt.2 pnt.3}
+ic_delete_geometry curve names crv.3 0
+ic_curve point GEOM crv.3 {pnt.3 pnt.4}
+ic_delete_geometry curve names crv.4 0
+ic_curve point GEOM crv.4 {pnt.4 pnt.5}
+ic_delete_geometry curve names crv.5 0
+ic_curve point GEOM crv.5 {pnt.5 pnt.6}
+ic_delete_geometry curve names crv.6 0
+ic_curve point GEOM crv.6 {pnt.1 pnt.2}
+ic_delete_geometry curve names crv.7 0
+ic_curve point GEOM crv.7 {pnt.2 pnt.3}
+ic_delete_geometry curve names crv.8 0
+ic_curve point GEOM crv.8 {pnt.3 pnt.4}
+ic_delete_geometry curve names crv.9 0
+ic_curve point GEOM crv.9 {pnt.4 pnt.5}
+ic_delete_geometry curve names crv.10 0
+ic_curve point GEOM crv.10 {pnt.5 pnt.6}
+ic_delete_geometry curve names crv.11 0
+ic_curve point GEOM crv.11 {pnt.1 pnt.7}
+ic_delete_geometry curve names crv.12 0
+ic_curve point GEOM crv.12 {pnt.2 pnt.8}
+ic_delete_geometry curve names crv.13 0
+ic_curve point GEOM crv.13 {pnt.3 pnt.9}
+ic_delete_geometry curve names crv.14 0
+ic_curve point GEOM crv.14 {pnt.4 pnt.10}
+ic_delete_geometry curve names crv.15 0
+ic_curve point GEOM crv.15 {pnt.5 pnt.11}
+ic_delete_geometry curve names crv.16 0
+ic_curve point GEOM crv.16 {pnt.6 pnt.12}
