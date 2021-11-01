@@ -9,6 +9,8 @@ import os
 import time
 from StagenReader import StagenReader
 import math
+import fileinput
+import shutil
 
 class Meangen2Parablade:
 
@@ -98,8 +100,8 @@ class Meangen2Parablade:
         HOME = os.getenv('M2BFM')
 
         # Running Meangen from input file and storing process report in an output file.
-        os.system("meangen.exe < "+HOME+"templates/input > Output")
-        #os.system("meangen.exe < "+HOME+"\\templates\\input > Output")
+        #os.system("meangen.exe < "+HOME+"templates/input > Output")
+        os.system("meangen.exe < "+HOME+"\\templates\\input > Output")
         print("Done!")
         print("Meangen took "+str(time.time() - start_time) + " seconds")
 
@@ -156,19 +158,27 @@ class Meangen2Parablade:
         Dir = os.getcwd()
 
         # Checking whether an output folder already exists and moving Meangen output files in it.
+        #shutil.move('/Users/billy/d1/xfile.txt', '/Users/billy/d2/xfile.txt')
         if os.path.isdir("MeangenOutput"):
-            os.system("mv meangen.in "+Dir+"/MeangenOutput/")
-            os.system("mv meangen.out " + Dir + "/MeangenOutput/")
-            os.system("mv meandesign.out " + Dir + "/MeangenOutput/")
-            os.system("mv stagen.dat " + Dir + "/MeangenOutput/")
-            os.system("mv Output " + Dir + "/MeangenOutput/")
+            #os.system("mv meangen.in "+Dir+"/MeangenOutput/")
+            shutil.move(Dir+"\\meangen.in", Dir+"\\MeangenOutput\\meangen.in")
+            shutil.move(Dir+"\\meangen.out", Dir+"\\MeangenOutput\\meangen.out")
+            shutil.move(Dir+"\\meandesign.out", Dir+"\\MeangenOutput\\meandesign.out")
+            shutil.move(Dir+"\\stagen.dat", Dir+"\\MeangenOutput\\stagen.dat")
+            shutil.move(Dir+"\\Output", Dir+"\\MeangenOutput\\Output")
         else:
-            os.system("mkdir " + Dir + "/MeangenOutput")
-            os.system("mv meangen.in " + Dir + "/MeangenOutput/")
-            os.system("mv meangen.out " + Dir + "/MeangenOutput/")
-            os.system("mv meandesign.out " + Dir + "/MeangenOutput/")
-            os.system("mv stagen.dat " + Dir + "/MeangenOutput/")
-            os.system("mv Output " + Dir + "/MeangenOutput/")
+            #os.system("mkdir " + Dir + "/MeangenOutput")
+            os.mkdir(Dir + "\\MeangenOutput")
+            shutil.move(Dir+"\\meangen.in", Dir+"\\MeangenOutput\\meangen.in")
+            shutil.move(Dir+"\\meangen.out", Dir+"\\MeangenOutput\\meangen.out")
+            shutil.move(Dir+"\\meandesign.out", Dir+"\\MeangenOutput\\meandesign.out")
+            shutil.move(Dir+"\\stagen.dat", Dir+"\\MeangenOutput\\stagen.dat")
+            shutil.move(Dir+"\\Output", Dir+"\\MeangenOutput\\Output")
+            # os.system("mv meangen.in " + Dir + "/MeangenOutput/")
+            #os.system("mv meangen.out " + Dir + "/MeangenOutput/")
+            #os.system("mv meandesign.out " + Dir + "/MeangenOutput/")
+            #os.system("mv stagen.dat " + Dir + "/MeangenOutput/")
+            #os.system("mv Output " + Dir + "/MeangenOutput/")
 
     def meangenWriter(self):
         # This function writes the Meangen input file from user input.
@@ -270,7 +280,7 @@ class Meangen2Parablade:
 
         # Getting template directory.
         HOME = os.environ["M2BFM"]
-        template_dir = HOME + "templates/"
+        template_dir = HOME + "\\templates"
 
         # Setting up empty arrays for Parablade input parameters.
         N_b = np.zeros(n_rows)      # Blade row blade count.
@@ -327,14 +337,20 @@ class Meangen2Parablade:
         # Looping over all blade rows to write a Parablade configuration file for each respective row.
         for i in range(n_rows):
             # Copying template configuration file from template directory.
-            os.system("cp " + template_dir + "/template_turbine.cfg ./Bladerow_" + str(i+1) + ".cfg")
+            os.system("copy " + template_dir + "\\template_turbine.cfg " + template_dir +"\\Bladerow_" + str(i+1) + ".cfg")
 
             # Replacing template names in template file by design values or types.
-            os.system("sed -i 's/CAS_type/"+CASCADE_TYPE+"/g' Bladerow_"+str(i+1) + ".cfg")
-            os.system("sed -i 's/N_sec/" + str(sec_count) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/N_point/" + str(point_count) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/N_dim/"+str(int(self.Dimension))+"/g' Bladerow_"+str(i+1) + ".cfg")
-            os.system("sed -i 's/N_blade/" + str(int(self.N_b[i])) + "/g' Bladerow_"+str(i+1) + ".cfg")
+            # import fileinput
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                 # inside this loop the STDOUT will be redirected to the file
+                 # the comma after each print statement is needed to avoid double line breaks
+                 new_line=line.replace("CAS_type", CASCADE_TYPE)
+                 new_line=new_line.replace("N_sec", str(sec_count))
+                 new_line=new_line.replace("N_point", str(point_count))
+                 new_line=new_line.replace("N_dim", str(int(self.Dimension)))
+                 new_line=new_line.replace("N_blade", str(int(self.N_b[i])))
+                 print(new_line,end="")
+
 
             # Calculating tangent of stagger angle, which is taken to be the average of the tangent of the inlet and
             # outlet metal angles.
@@ -344,11 +360,13 @@ class Meangen2Parablade:
             stagger = []
             for m in range(len(tan_stagger)):
                 stagger.append(math.atan(tan_stagger[m])*180.0/np.pi)
-            os.system("sed -i 's/STAGGER/"+", ".join([str(s) for s in stagger])+"/g' Bladerow_"+str(i+1)+".cfg")
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                print (line.replace("STAGGER", ", ".join([str(s) for s in stagger])),end="")
 
 
             X_le = np.transpose(self.X_LE[n_start:n_end, i])
-            os.system("sed -i 's/X_LE/" + ", ".join([str(s) for s in X_le]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                print (line.replace("X_LE", ", ".join([str(s) for s in X_le])),end="")
             Z_le = np.transpose(self.Z_LE[:, i])
             Z_te = np.transpose(self.Z_TE[:, i])
 
@@ -363,8 +381,11 @@ class Meangen2Parablade:
             # z_le[-1] -= tip_gap[i] * (Z_le[-1] - Z_le[0])
             # z_te[-1] -= tip_gap[i] * (Z_le[-1] - Z_le[0])
 
-            os.system("sed -i 's/Z_LE/" + ", ".join([str(s) for s in z_le]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/Z_TE/" + ", ".join([str(s) for s in z_te]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                 new_line=line.replace("Z_LE", ", ".join([str(s) for s in z_le]))
+                 new_line=new_line.replace("Z_TE", ", ".join([str(s) for s in z_te]))
+                 print(new_line,end="")
+
 
             # X_hub = [0.75*self.X_LE[0, i] + 0.25*self.X_TE[0, i], 0.75*self.X_TE[0, i] + 0.25*self.X_LE[0, i]]
             # os.system("sed -i 's/X_HUB/" + ", ".join([str(s) for s in X_hub]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
@@ -379,16 +400,18 @@ class Meangen2Parablade:
             # os.system("sed -i 's/Z_SHROUD/" + ", ".join([str(s) for s in Z_shroud]) +
             #           "/g' Bladerow_" + str(i + 1) + ".cfg")
             X_hub = [0.75*self.X_LE[0, i] + 0.25*self.X_TE[0, i], 0.75*self.X_TE[0, i] + 0.25*self.X_LE[0, i]]
-            os.system("sed -i 's/X_HUB/" + ", ".join([str(s) for s in X_hub]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
             Z_hub = [0.75*z_le[0] + 0.25*z_te[0], 0.75*z_te[0] + 0.25*z_le[0]]
-            os.system("sed -i 's/Z_HUB/" + ", ".join([str(s) for s in Z_hub]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            X_shroud = [0.75 * self.X_LE[-1, i] + 0.25 * self.X_TE[-1, i], 0.75 * self.X_TE[-1, i] + 0.25 *
-                        self.X_LE[-1, i]]
-            os.system("sed -i 's/X_SHROUD/" + ", ".join([str(s) for s in X_shroud]) +
-                      "/g' Bladerow_" + str(i + 1) + ".cfg")
+            X_shroud = [0.75 * self.X_LE[-1, i] + 0.25 * self.X_TE[-1, i], 0.75 * self.X_TE[-1, i] + 0.25 *self.X_LE[-1, i]]
             Z_shroud = [0.75*z_le[-1] + 0.25*z_te[-1], 0.75*z_te[-1] + 0.25*z_le[-1]]
-            os.system("sed -i 's/Z_SHROUD/" + ", ".join([str(s) for s in Z_shroud]) +
-                      "/g' Bladerow_" + str(i + 1) + ".cfg")
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                 new_line=line.replace("X_HUB", ", ".join([str(s) for s in X_hub]))
+                 new_line=new_line.replace("Z_HUB",", ".join([str(s) for s in Z_hub]) )
+                 new_line=new_line.replace("X_SHROUD", ", ".join([str(s) for s in X_shroud]))
+                 new_line=new_line.replace("Z_SHROUD",", ".join([str(s) for s in Z_shroud]))
+                 print(new_line,end="")
+
+
+
             # if (i+1) % 2 == 0:
             #     z_le = []
             #     z_te = []
@@ -415,16 +438,29 @@ class Meangen2Parablade:
             #     os.system("sed -i 's/Z_LE/" + ", ".join([str(s) for s in Z_le]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
             #     os.system("sed -i 's/Z_TE/" + ", ".join([str(s) for s in Z_te]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
             X_te = np.transpose(self.X_TE[n_start:n_end, i])
-            os.system("sed -i 's/X_TE/" + ", ".join([str(s) for s in X_te]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-
+            #os.system("sed -i 's/X_TE/" + ", ".join([str(s) for s in X_te]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                print (line.replace("X_TE", ", ".join([str(s) for s in X_te])),end="")
 
             for n in range(6):
-                os.system("sed -i 's/T"+str(n+1)+"/"+", ".join([str(T[n, i]) for j in range(n_sec)]) +"/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/D1/"+", ".join([str(D1[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/D2/" + ", ".join([str(D2[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/R_LE/" + ", ".join([str(R_LE[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/R_TE/" + ", ".join([str(R_TE[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/THETA_IN/" + ", ".join([str(d) for d in self.theta_in[n_start:n_end, i]]) +
-                      "/g' Bladerow_" + str(i + 1) + ".cfg")
-            os.system("sed -i 's/THETA_OUT/" + ", ".join([str(d) for d in self.theta_out[n_start:n_end, i]]) +
-                      "/g' Bladerow_" + str(i + 1) + ".cfg")
+               # os.system("sed -i 's/T"+str(n+1)+"/"+", ".join([str(T[n, i]) for j in range(n_sec)]) +"/g' Bladerow_" + str(i + 1) + ".cfg")
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                     print (line.replace("T"+str(n+1), ", ".join([str(T[n, i]) for j in range(n_sec)])),end="")
+            #os.system("sed -i 's/D1/"+", ".join([str(D1[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            #os.system("sed -i 's/D2/" + ", ".join([str(D2[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            #os.system("sed -i 's/R_LE/" + ", ".join([str(R_LE[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            #os.system("sed -i 's/R_TE/" + ", ".join([str(R_TE[i]) for j in range(n_sec)]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+            #os.system("sed -i 's/THETA_IN/" + ", ".join([str(d) for d in self.theta_in[n_start:n_end, i]]) +
+             #         "/g' Bladerow_" + str(i + 1) + ".cfg")
+           # os.system("sed -i 's/THETA_OUT/" + ", ".join([str(d) for d in self.theta_out[n_start:n_end, i]]) +
+            #          "/g' Bladerow_" + str(i + 1) + ".cfg")
+
+            for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + ".cfg", inplace=True):
+                 new_line=line.replace("D1", ", ".join([str(D1[i]) for j in range(n_sec)]))
+                 new_line=new_line.replace("D2",", ".join([str(D2[i]) for j in range(n_sec)]) )
+                 new_line=new_line.replace("R_LE", ", ".join([str(R_LE[i]) for j in range(n_sec)]))
+                 new_line=new_line.replace("R_TE",", ".join([str(R_TE[i]) for j in range(n_sec)]))
+                 new_line=new_line.replace("THETA_IN",", ".join([str(d) for d in self.theta_in[n_start:n_end, i]]))
+                 new_line=new_line.replace("THETA_OUT",", ".join([str(d) for d in self.theta_out[n_start:n_end, i]]))
+                 print(new_line,end="")
+

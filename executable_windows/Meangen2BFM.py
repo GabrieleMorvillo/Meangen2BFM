@@ -20,7 +20,7 @@ import time
 # Getting the executables directory
 #HOME = os.environ["M2BFM"]
 HOME = os.getenv('M2BFM')
-sys.path.append(HOME + "executables/")
+sys.path.append(HOME + "\\executables_windows")
 #sys.path.append(HOME + "\\executables")
 # Importing all relevant executables from the installation directory
 from Meangen2Parablade import Meangen2Parablade
@@ -45,7 +45,7 @@ DIR = os.getcwd() + '/'
 #                     '\n\tMakeBlade.py <configuration file name>')
 t_start = time.time()
 
-INFile = DIR + 'templates/M2P_fan_stage.cfg'
+INFile = DIR + '\\templates\\M2P_fan_stage.cfg'
 # INFile = '/home/gabbo/Documents/bitbucket_local/fan-stage-design/M2P.cfg'
 IN = ReadUserInput(INFile)
 
