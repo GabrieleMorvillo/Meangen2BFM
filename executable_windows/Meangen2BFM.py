@@ -16,6 +16,7 @@
 import sys
 import os
 import time
+import shutil
 
 # Getting the executables directory
 #HOME = os.environ["M2BFM"]
@@ -32,7 +33,7 @@ from dataPlotter import axial_data_plotter
 # from ParaviewPost import AxialMachine
 
 # Reading input file
-DIR = os.getcwd() + '/'
+DIR = os.getcwd() 
 # try:
 #     INFile = DIR + sys.argv[-1]
 # except:
@@ -59,22 +60,32 @@ n_rows = 2*n_stage
 # Looping over the number of stages to create folders for each stage and respective bladerow.
 for i in range(n_stage):
     if os.path.isdir("Stage_"+str(i+1)):
-        if os.path.isdir("Stage_"+str(i+1) + "/Bladerow_1"):
-            os.system("mv Bladerow_"+str(2*i + 1) + ".cfg" + " Stage_"+str(i+1)+"/Bladerow_1/Bladerow.cfg")
+        if os.path.isdir("Stage_"+str(i+1) + "\\Bladerow_1"):
+            #os.system("mv Bladerow_"+str(2*i + 1) + ".cfg" + " Stage_"+str(i+1)+"/Bladerow_1/Bladerow.cfg")
+            shutil.move(DIR + "\\templates\\Bladerow_"+str(2*i + 1) + ".cfg", "Stage_"+str(i+1)+"\\Bladerow_1\\Bladerow.cfg")
         else:
-            os.system("mkdir "+"Stage_"+str(i+1)+"/Bladerow_1")
-            os.system("mv Bladerow_" + str(2 * i + 1) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_1/Bladerow.cfg")
-        if os.path.isdir("Stage_"+str(i+1) + "/Bladerow_2"):
-            os.system("mv Bladerow_" + str(2 * i + 2) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_2/Bladerow.cfg")
+            #os.system("mkdir "+"Stage_"+str(i+1)+"/Bladerow_1")
+            os.mkdir("Stage_"+str(i+1)+"\\Bladerow_1")
+            #os.system("mv Bladerow_" + str(2 * i + 1) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_1/Bladerow.cfg")
+            shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 1) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_1\\Bladerow.cfg")
+        if os.path.isdir("Stage_"+str(i+1) + "\\Bladerow_2"):
+            shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
         else:
-            os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_2")
-            os.system("mv Bladerow_" + str(2 * i + 2) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_2/Bladerow.cfg")
+            #os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_2")
+            os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_2")
+            shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
     else:
-        os.system("mkdir Stage_"+str(i+1))
-        os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_1")
-        os.system("mv Bladerow_" + str(2 * i + 1) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_1/Bladerow.cfg")
-        os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_2")
-        os.system("mv Bladerow_" + str(2 * i + 2) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_2/Bladerow.cfg")
+        os.mkdir("Stage_"+str(i+1))
+        os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_1")
+        shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 1) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_1\\Bladerow.cfg")
+        os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_2")
+        shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
+
+        #os.system("mkdir Stage_"+str(i+1))
+        #os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_1")
+        #os.system("mv Bladerow_" + str(2 * i + 1) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_1/Bladerow.cfg")
+        #os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_2")
+        #os.system("mv Bladerow_" + str(2 * i + 2) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_2/Bladerow.cfg")
 
 # Checking for body-force and/or blade mesh option.
 BFM = False
@@ -90,16 +101,26 @@ row = 1
 for i in range(n_stage):
     for j in [1, 2]:
         # Moving to current blade row directory.
-        os.chdir(os.getcwd()+"/Stage_"+str(i+1)+"/Bladerow_"+str(j)+"/")
+        #b=os.getcwd()
+        os.chdir(os.getcwd()+"\\Stage_"+str(i+1)+"\\Bladerow_"+str(j))
+        DIRROW=os.getcwd()
+        b=DIRROW+"\\Bladerow.cfg"
+        BLADE_HOME = os.getenv('BLADE_HOME')
+        BLADE = os.getenv('BLADE')
+        os.environ["parablade_infile"]=b
 
         # Checking for blade plot option.
         if IN['PLOT_BLADE'] == 'YES':
             print("plotting blade")
-            os.system("PlotBlade.py Bladerow.cfg > Parablade.out")
+            #os.system("PlotBlade.py Bladerow.cfg > Parablade.out")
+            #os.system("PlotBlade.py "+DIRROW+"\\Bladerow.cfg > "+DIRROW+ "Output")
+            #os.system("python.exe PlotBlade.py "+DIRROW+"\\Bladerow.cfg")
+            os.system("python -m PlotBlade Bladerow.cfg > Parablade.out")
+
 
         # Executing Parablade.
         print("Running Parablade...")
-        os.system("MakeBlade.py Bladerow.cfg > Parablade.out")
+        os.system("python -m MakeBlade Bladerow.cfg > Parablade.out")
         print("Done!")
 
         if IN["ADJOINT"] == 'YES':
