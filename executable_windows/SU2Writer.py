@@ -7,6 +7,7 @@
 import os
 import re
 import numpy as np
+import fileinput
 
 # Class used for combining all individual blade row BFM input files into a single file for the entire machine.
 class writeBFMinput:
@@ -20,7 +21,7 @@ class writeBFMinput:
 
         # Creating machine input file for BFM interpolation.
         self.dir = os.getcwd()
-        self.BFMfile = open(self.dir + "/BFM_stage_input.drg", "w+")
+        self.BFMfile = open(self.dir + "\\BFM_stage_input.drg", "w+")
         # Getting section and axial point information from Parablade output.
         #self.getBFMinputs()
         # Writing number of rows, sections and axial points into the BFM interpolation file.
@@ -34,9 +35,9 @@ class writeBFMinput:
         for i in range(self.M.n_stage):
             # Looping over the two blade rows in each stage.
             for j in [1, 2]:
-                # Opening the BFM input file of the current blade row.
-                with open(self.dir + "/Stage_"+str(i+1)+"/Bladerow_"+str(j)+"/output/mesh_files/BFM_input", "r") as file:
-                    # Reading axial point and section count information from the first line.
+               # Opening the BFM input file of the current blade row.
+                with open(self.dir + "\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"\\output\\mesh_files/\\FM_input", "r") as file:
+                    #Reading axial point and section count information from the first line.
                     first_line = file.readline().split('\t', 2)
                     first_line[-1] = first_line[-1].strip()
                     # Updating axial point count, section count and row count.
@@ -87,7 +88,7 @@ class writeBFMinput:
             for j in [1, 2]:
                 self.BFMfile.write("<blade row>\n")
                 self.BFMfile.write("<tang section>\n")
-                with open(self.dir + "/Stage_"+str(i+1)+"/Bladerow_"+str(j)+"/output/mesh_files/BFM_input.drg", "r") as file:
+                with open(self.dir + "\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"\\output\\mesh_files\\BFM_input.drg", "r") as file:
                     # Skipping the first line in the blade row file.
                     lines = file.readlines()
                     start_line = np.where(np.array(lines) == "<blade row>\n")[0]
@@ -143,8 +144,10 @@ class writeSU2input:
     def __init__(self, IN):
         HOME = os.environ["M2BFM"]
         self.IN = IN
-        template_dir = HOME + "templates/"
-        os.system("cp "+template_dir+"BFM_comp_template_v7.template ./BFM_comp.cfg")
+        template_dir = HOME + "\\templates"
+        #os.system("cp "+template_dir+"\\BFM_comp_template_v7.template ./BFM_comp.cfg")
+        os.system("copy " + template_dir + "\\BFM_comp_template_v7.template " + template_dir +"\\BFM_comp.cfg")
+        
         self.ReplaceTerms()
 
     def ReplaceTerms(self):
@@ -152,18 +155,40 @@ class writeSU2input:
         R = self.IN["R_gas"][0]
         rot_axis = self.IN["Rotation_axis"]
 
-        os.system("sed -i 's/GAMMA_FLUID/" + str(gamma) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/R_FLUID/" + str(R) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/OMEGA/" + str(self.IN["Omega"][0]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/ROT_X/" + str(rot_axis[0]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/ROT_Y/" + str(rot_axis[1]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/ROT_Z/" + str(rot_axis[2]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/UIN_X/" + str(rot_axis[0]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/UIN_Y/" + str(rot_axis[1]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/UIN_Z/" + str(rot_axis[2]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/P_TOT_IN/" + str(self.IN["P_t_in"][0] * 1e5) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/T_TOT_IN/" + str(self.IN["T_t_in"][0]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/P_STAT_OUT/" + str(self.IN["P_s_out"][0] * 1e5) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/WEDGE_X/" + str(rot_axis[0] * self.IN["WEDGE"][0]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/WEDGE_Y/" + str(rot_axis[1] * self.IN["WEDGE"][0]) + "/g' BFM_comp.cfg")
-        os.system("sed -i 's/WEDGE_Z/" + str(rot_axis[2] * self.IN["WEDGE"][0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/GAMMA_FLUID/" + str(gamma) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/R_FLUID/" + str(R) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/OMEGA/" + str(self.IN["Omega"][0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/ROT_X/" + str(rot_axis[0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/ROT_Y/" + str(rot_axis[1]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/ROT_Z/" + str(rot_axis[2]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/UIN_X/" + str(rot_axis[0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/UIN_Y/" + str(rot_axis[1]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/UIN_Z/" + str(rot_axis[2]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/P_TOT_IN/" + str(self.IN["P_t_in"][0] * 1e5) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/T_TOT_IN/" + str(self.IN["T_t_in"][0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/P_STAT_OUT/" + str(self.IN["P_s_out"][0] * 1e5) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/WEDGE_X/" + str(rot_axis[0] * self.IN["WEDGE"][0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/WEDGE_Y/" + str(rot_axis[1] * self.IN["WEDGE"][0]) + "/g' BFM_comp.cfg")
+        # os.system("sed -i 's/WEDGE_Z/" + str(rot_axis[2] * self.IN["WEDGE"][0]) + "/g' BFM_comp.cfg")
+
+
+        for line in fileinput.input(template_dir +"\\BFM_comp.cfg", inplace=True):
+                 new_line=line.replace("GAMMA_FLUID", str(gamma))
+                 new_line=new_line.replace("R_FLUID", str(R))
+                 new_line=new_line.replace("OMEGA", str(self.IN["Omega"][0]))
+                 new_line=new_line.replace("ROT_X", str(rot_axis[0]))
+                 new_line=new_line.replace("ROT_Y", str(rot_axis[1]))
+                 new_line=new_line.replace("ROT_Z", str(rot_axis[2]))
+                 new_line=new_line.replace("UIN_X", str(rot_axis[0]))
+                 new_line=new_line.replace("UIN_Y", str(rot_axis[1]))
+                 new_line=new_line.replace("UIN_Z", str(rot_axis[2]))
+                 new_line=new_line.replace("P_TOT_IN", str(self.IN["P_t_in"][0] * 1e5))
+                 new_line=new_line.replace("T_TOT_IN/", str(self.IN["T_t_in"][0]))
+
+                 new_line=new_line.replace("P_STAT_OUT", str(self.IN["P_s_out"][0] * 1e5))
+                 new_line=new_line.replace("WEDGE_X", str(rot_axis[0] * self.IN["WEDGE"][0]))
+                 new_line=new_line.replace("WEDGE_Y" , str(rot_axis[1] * self.IN["WEDGE"][0]))
+                 new_line=new_line.replace("WEDGE_Z", str(rot_axis[2] * self.IN["WEDGE"][0]))
+                 print(new_line,end="")
+
+

@@ -1,4 +1,3 @@
-ic_chdir C:/Users/GMrx1/Desktop/ANSYS_WORKS/lecture1
 ic_set_global geo_cad 0 toptol_userset
 ic_set_global geo_cad 0.0 toler
 ic_set_meshing_params global 0
@@ -35,15 +34,15 @@ ic_curve point GEOM crv.4 {pnt.4 pnt.5}
 ic_delete_geometry curve names crv.5 0
 ic_curve point GEOM crv.5 {pnt.5 pnt.6}
 ic_delete_geometry curve names crv.6 0
-ic_curve point GEOM crv.6 {pnt.1 pnt.2}
+ic_curve point GEOM crv.6 {pnt.7 pnt.8}
 ic_delete_geometry curve names crv.7 0
-ic_curve point GEOM crv.7 {pnt.2 pnt.3}
+ic_curve point GEOM crv.7 {pnt.8 pnt.9}
 ic_delete_geometry curve names crv.8 0
-ic_curve point GEOM crv.8 {pnt.3 pnt.4}
+ic_curve point GEOM crv.8 {pnt.9 pnt.10}
 ic_delete_geometry curve names crv.9 0
-ic_curve point GEOM crv.9 {pnt.4 pnt.5}
+ic_curve point GEOM crv.9 {pnt.10 pnt.11}
 ic_delete_geometry curve names crv.10 0
-ic_curve point GEOM crv.10 {pnt.5 pnt.6}
+ic_curve point GEOM crv.10 {pnt.11 pnt.12}
 ic_delete_geometry curve names crv.11 0
 ic_curve point GEOM crv.11 {pnt.1 pnt.7}
 ic_delete_geometry curve names crv.12 0
@@ -56,3 +55,30 @@ ic_delete_geometry curve names crv.15 0
 ic_curve point GEOM crv.15 {pnt.5 pnt.11}
 ic_delete_geometry curve names crv.16 0
 ic_curve point GEOM crv.16 {pnt.6 pnt.12}
+ic_set_global geo_cad 0 toptol_userset
+ic_set_global geo_cad 0.0002 toler
+ic_surface bsinterp GEOM srf.1 {crv.11 crv.1 crv.2 crv.3 crv.4 crv.5 crv.16 crv.10 crv.9 crv.8 crv.7 crv.6}
+ic_set_global geo_cad 0.0002 toler
+ic_set_dormant_pickable point 0 {}
+ic_set_dormant_pickable curve 0 {}
+ic_set_global geo_cad 0.0002 toler
+ic_geo_duplicate_set_fam_and_data surface srf.1 srf.2 {} _0
+ic_move_geometry surface names srf.2 rotate 1.0 rotate_axis {0 0 1} cent {0 0 0}
+ic_geo_reset_data_structures
+ic_geo_configure_one_attribute surface shade wire
+ic_set_global geo_cad 0.0006 toler
+ic_geo_duplicate_set_fam_and_data point pnt.1 pnt.13 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.2 pnt.14 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.3 pnt.15 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.4 pnt.16 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.5 pnt.17 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.6 pnt.18 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.7 pnt.19 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.8 pnt.20 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.9 pnt.21 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.10 pnt.22 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.11 pnt.23 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.12 pnt.24 {} _0
+ic_move_geometry point names { pnt.13 pnt.14 pnt.15 pnt.16 pnt.17 pnt.18 pnt.19 pnt.20 pnt.21 pnt.22 pnt.23 pnt.24 } rotate 1.0 rotate_axis {0 0 1} cent {0 0 0}
+ic_geo_reset_data_structures
+ic_geo_configure_one_attribute surface shade wire
