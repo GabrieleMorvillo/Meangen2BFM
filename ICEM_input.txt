@@ -11,18 +11,18 @@ ic_geo_set_units {}
 ic_geo_new_family GEOM
 ic_boco_set_part_color GEOM
 ic_empty_tetin
-ic_point {} GEOM pnt.1 0.0018409237491304703,0.2109489674038484,-0.10468899999999999
-ic_point {} GEOM pnt.2 0.0018409237491304703,0.2109489674038484,-0.001409
-ic_point {} GEOM pnt.3 0.0020690266605224664,0.23708697211082277,0.050231
-ic_point {} GEOM pnt.4 0.00207297978110323,0.23753995486197085,0.054999
-ic_point {} GEOM pnt.5 0.0020853191022979305,0.23895390102118358,0.105005
-ic_point {} GEOM pnt.6 0.0020853191022979305,0.23895390102118358,0.205017
-ic_point {} GEOM pnt.7 0.0051403046495686775,0.5890205710474886,-0.10468899999999999
-ic_point {} GEOM pnt.8 0.0051403046495686775,0.5890205710474886,-0.001408
-ic_point {} GEOM pnt.9 0.004912201738176681,0.5628825663405143,0.050232
-ic_point {} GEOM pnt.10 0.0049082486175959185,0.5624295835893662,0.054999
-ic_point {} GEOM pnt.11 0.004895909296401217,0.5610156374301535,0.105005
-ic_point {} GEOM pnt.12 0.004895909296401217,0.5610156374301535,0.205017
+ic_point {} GEOM pnt.1 0.05459968929769247,0.20376881453646298,-0.10468899999999999
+ic_point {} GEOM pnt.2 0.05459968929769247,0.20376881453646298,-0.001409
+ic_point {} GEOM pnt.3 0.06136496031762726,0.22901714970983295,0.050231
+ic_point {} GEOM pnt.4 0.0614822053450587,0.2294547141091419,0.054999
+ic_point {} GEOM pnt.5 0.061848175474833664,0.23082053322751464,0.105005
+ic_point {} GEOM pnt.6 0.061848175474833664,0.23082053322751464,0.205017
+ic_point {} GEOM pnt.7 0.15245554678432413,0.5689718464947916,-0.10468899999999999
+ic_point {} GEOM pnt.8 0.15245554678432413,0.5689718464947916,-0.001408
+ic_point {} GEOM pnt.9 0.14569027576438934,0.5437235113214217,0.050232
+ic_point {} GEOM pnt.10 0.1455730307369579,0.5432859469221127,0.054999
+ic_point {} GEOM pnt.11 0.14520706060718294,0.54192012780374,0.105005
+ic_point {} GEOM pnt.12 0.14520706060718294,0.54192012780374,0.205017
 ic_delete_geometry curve names crv.1 0
 ic_curve point GEOM crv.1 {pnt.1 pnt.2}
 ic_delete_geometry curve names crv.2 0
@@ -63,7 +63,7 @@ ic_set_dormant_pickable point 0 {}
 ic_set_dormant_pickable curve 0 {}
 ic_set_global geo_cad 0.0002 toler
 ic_geo_duplicate_set_fam_and_data surface srf.1 srf.2 {} _0
-ic_move_geometry surface names srf.2 rotate 1.0 rotate_axis {0 0 1} cent {0 0 0}
+ic_move_geometry surface names srf.2 rotate 30 rotate_axis {0 0 1} cent {0 0 0}
 ic_geo_reset_data_structures
 ic_geo_configure_one_attribute surface shade wire
 ic_set_global geo_cad 0.0006 toler
@@ -79,6 +79,36 @@ ic_geo_duplicate_set_fam_and_data point pnt.9 pnt.21 {} _0
 ic_geo_duplicate_set_fam_and_data point pnt.10 pnt.22 {} _0
 ic_geo_duplicate_set_fam_and_data point pnt.11 pnt.23 {} _0
 ic_geo_duplicate_set_fam_and_data point pnt.12 pnt.24 {} _0
-ic_move_geometry point names { pnt.13 pnt.14 pnt.15 pnt.16 pnt.17 pnt.18 pnt.19 pnt.20 pnt.21 pnt.22 pnt.23 pnt.24 } rotate 1.0 rotate_axis {0 0 1} cent {0 0 0}
+ic_move_geometry point names { pnt.13 pnt.14 pnt.15 pnt.16 pnt.17 pnt.18 pnt.19 pnt.20 pnt.21 pnt.22 pnt.23 pnt.24 } rotate 30 rotate_axis {0 0 1} cent {0 0 0}
 ic_geo_reset_data_structures
 ic_geo_configure_one_attribute surface shade wire
+ic_set_global geo_cad 0.0006 toler
+ic_geo_duplicate_set_fam_and_data curve crv.1 crv.19 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.2 crv.20 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.3 crv.21 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.4 crv.22 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.5 crv.23 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.6 crv.24 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.7 crv.25 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.8 crv.26 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.9 crv.27 {} _0
+ic_geo_duplicate_set_fam_and_data curve crv.10 crv.28 {} _0
+ic_move_geometry curve names {crv.19 crv.20 crv.21 crv.22 crv.23 crv.24 crv.25 crv.26 crv.27 crv.28 } rotate 30 rotate_axis {0 0 1} cent {0 0 0}
+ic_geo_reset_data_structures
+ic_geo_configure_one_attribute surface shade wire
+ic_set_global geo_cad 0.0006 toler
+ic_curve concat GEOM crv.17 {crv.19 crv.20 crv.21 crv.22 crv.23 }
+ic_curve concat GEOM crv.18 {crv.24 crv.25 crv.26 crv.27 crv.28 }
+ic_set_global geo_cad 0.0002 toler
+ic_point {} GEOM pnt.25 0,0,0
+ic_point {} GEOM pnt.26 0,0,1
+ic_set_global geo_cad 0.0006 toler
+ic_geo_cre_srf_rev GEOM srf.3 crv.17 pnt.25 {0 0 1} 0 30 c 1
+ic_set_global geo_cad 0.001 toler
+ic_set_dormant_pickable point 0 {}
+ic_set_dormant_pickable curve 0 {}
+ic_set_global geo_cad 0.0006 toler
+ic_geo_cre_srf_rev GEOM srf.4 crv.18 pnt.25 {0 0 1} 0 30 c 1
+ic_set_global geo_cad 0.001 toler
+ic_set_dormant_pickable point 0 {}
+ic_set_dormant_pickable curve 0 {}

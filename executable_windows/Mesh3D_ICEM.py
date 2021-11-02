@@ -31,7 +31,8 @@ class ICEM3D:
 
         # Reading mesh parameters from input file.
 
-        self.wedge = IN["WEDGE"][0]     # Importing mesh wedge angle
+        #self.wedge = IN["WEDGE"][0]     # Importing mesh wedge angle
+        self.wedge = 30
         self.n_sec = int(IN["SECTIONS_PER_DEGREE"][0]) * self.wedge     # Calculating number of tangential nodes
         self.n_point = int(IN["AXIAL_POINTS"][0])       # Importing axial node count
         self.inlet_fac = IN["INLET_FACTOR"][0]          # Importing inlet cell size factor
@@ -72,11 +73,11 @@ class ICEM3D:
         #  #Connecting the mesh points to create lines.
         self.makeLines()
 
-        # Making periodic plane.
+        # Making lateral periodic faces.
         self.makeSymFaces()
 
-        # # Revolving plane around rotation axis to create 3D wedge.
-        # self.revolve()
+        # Revolving hub and shroud around rotation axis to create walls.
+        self.makeWalls()
 
         # # Setting names to boundaries.
         # self.nameBoundaries()
@@ -251,10 +252,77 @@ class ICEM3D:
     #                 L_av = 0.5 * (self.length_hub[i] + self.length_shroud[i])
     #             self.model.mesh.setTransfiniteCurve(self.lines_rad[i], max([int(self.n_point*self.length_rad[i]/L_av), 3]))
 
-    # def revolve(self):
-    #     # This function revolves the 2D periodic plane around the rotation axis to create a wedge.
-    #     # The center point of the revolution is located at the origin and the rotation axis is set to be the x-axis.
-    #     self.Rev = self.factory.revolve([(2, 1)], 0, 0, 0, 0, 0, 1, self.wedge*np.pi/180, [self.n_sec])
+    def makeWalls(self):
+        # This function revolves the hub and shroud curves around the rotation axis to create the solid walls.
+        # The center point of the revolution is located at the origin and the rotation axis is set to be the z-axis.
+        
+        # Create the reference points for the rotation axis
+        points_rot_axis = []
+        points_count =self.points_count
+
+        f = open("ICEM_input.txt", "a")
+        f.write("ic_set_global geo_cad 0.0002 toler\n")
+        points_count += 1
+        f.write("ic_point {} GEOM pnt." + str(points_count) + " 0,0,0\n")
+        points_rot_axis.append(points_count)
+        points_count += 1
+        f.write("ic_point {} GEOM pnt." + str(points_count) + " 0,0,1\n")
+        points_rot_axis.append(points_count)
+
+        # Storing rotational axis into the class
+        self.points_rot_axis = points_rot_axis
+        self.points_count = points_count
+
+       
+        # Revolve the hub curves 
+        walls = []
+        i_surf = self.surfaces_count
+        line_hub2= str(self.lines_hub2[0])
+        # loop = " {"
+        # for i in self.lines_hub:
+        #     loop = loop + " crv." + str(i)
+        # loop = loop + " }"
+        # f.write("ic_set_global geo_cad 0.0006 toler\n")
+        # f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) +  loop + " pnt." + str(points_count-1) + "{0 0 1} 0 " + str(self.wedge) + " c 1\n")
+        # f.write("ic_set_global geo_cad 0.001 toler\n")
+        # f.write("ic_set_dormant_pickable point 0 {}\n")
+        # f.write("ic_set_dormant_pickable curve 0 {}\n")
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_hub2 + " pnt." + str(points_count-1) + " {0 0 1} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_set_global geo_cad 0.001 toler\n")
+        f.write("ic_set_dormant_pickable point 0 {}\n")
+        f.write("ic_set_dormant_pickable curve 0 {}\n")
+        walls.append(i_surf+1)
+        
+        # Revolve the shroud curves 
+        # loop = " {"
+        # for i in self.lines_shroud:
+        #     loop = loop + " crv." + str(i)
+        # loop = loop + " }"
+        # f.write("ic_set_global geo_cad 0.0006 toler\n")
+        # f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) +  loop + " pnt." + str(points_count-1) + "{0 0 1} 0 " + str(self.wedge) + " c 1\n")
+        # f.write("ic_set_global geo_cad 0.001 toler\n")
+        # f.write("ic_set_dormant_pickable point 0 {}\n")
+        # f.write("ic_set_dormant_pickable curve 0 {}\n")
+        line_shroud2= str(self.lines_shroud2[0])
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_shroud2 + " pnt." + str(points_count-1) + " {0 0 1} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_set_global geo_cad 0.001 toler\n")
+        f.write("ic_set_dormant_pickable point 0 {}\n")
+        f.write("ic_set_dormant_pickable curve 0 {}\n")
+        walls.append(i_surf+2)
+        
+
+        f.close()
+
+        # Storing the hub and shroud wall surface identifiers into the class.
+        self.walls = walls
+        self.surfaces_count += len(walls)
+        
+
+
+    
+
 
     def makeSymFaces(self):
         # This function takes the lines defining the hub, shroud, inlet and outlet and builds a plane surface bound by
@@ -262,7 +330,7 @@ class ICEM3D:
         # Then the other face with symmetric B.C. (wedge sides) is created by rotating the previous one around z axis.
         # Last step is to rotate the reference points from the original surface onto the new one.
 
-        face_simmetry =[]
+        faces_simmetry =[]
         i_face = 1 #Initialize surface count
 
         # Defining a list containing the line identifiers to make a GMesh curve loop.
@@ -274,16 +342,6 @@ class ICEM3D:
             loop = loop + " crv." + str(i) 
         loop = loop + "}"
 
-
-        # Create surface from 2/4 lines with 0.01 tolerance
-        # f = open("ICEM_input.txt", "a")
-        # f.write("ic_set_global geo_cad 0 toptol_userset\n")
-        # f.write("ic_set_global geo_cad 0.0002 toler\n")
-        # f.write("ic_surface 2-4crvs GEOM srf." + str(i_face) + " {0.0002 " + loop + "}\n")
-        # f.write("ic_set_global geo_cad 0.0006 toler\n")
-        # f.write("ic_set_dormant_pickable point 0 {}\n")
-        # f.write("ic_set_dormant_pickable curve 0 {}\n")
-
         # Create surface from n lines with 0.01 tolerance
         f = open("ICEM_input.txt", "a")
         f.write("ic_set_global geo_cad 0 toptol_userset\n")
@@ -293,18 +351,8 @@ class ICEM3D:
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
         
-
-
-        # ic_set_global geo_cad 0 toptol_userset
-# ic_set_global geo_cad 0.0002 toler
-# ic_surface bsinterp GEOM srf.01 {crv.16 crv.10 crv.9 crv.8 crv.7 crv.6 crv.11 crv.1 crv.2 crv.3 crv.4 crv.5}
-# ic_set_global geo_cad 0.0002 toler
-# ic_set_dormant_pickable point 0 {}
-# ic_set_dormant_pickable curve 0 {}
-
-        face_simmetry.append(i_face)
-        
-        
+        faces_simmetry.append(i_face)
+            
         f.write("ic_set_global geo_cad 0.0002 toler\n")
         f.write("ic_geo_duplicate_set_fam_and_data surface srf." +str(i_face) + " srf." + str(i_face+1) + " {} _0\n")
         f.write("ic_move_geometry surface names srf." + str(i_face+1) + " rotate " + str(self.wedge) + " rotate_axis {0 0 1} cent {0 0 0}\n")
@@ -312,56 +360,89 @@ class ICEM3D:
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
         i_face += 1
-        face_simmetry.append(i_face)
-
+        faces_simmetry.append(i_face)
+        
 
         # Rotate the reference points for future blocking set
-        face1_points = len(self.points_hub) + len(self.points_shroud)
+        # face1_points = self.point_count
+        points_count = self.points_count
         points_hub2 = []
         points_shroud2 = []
 
         loop = "{"
-
         f.write("ic_set_global geo_cad 0.0006 toler\n")
         # Copy hub points to hub2
         for i in (self.points_hub):
-            i_point = i + face1_points
-            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(i) + " pnt." + str(i_point) + " {} _0\n")
-            loop = loop + " pnt." + str(i_point)
-            points_hub2.append(i_point)
+            # i_point = i + point_count
+            points_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(i) + " pnt." + str(points_count) + " {} _0\n")
+            loop = loop + " pnt." + str(points_count)
+            points_hub2.append(points_count)
         # Copy shroud points to shroud2
         for i in (self.points_shroud):
-            i_point = i + face1_points
-            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(i) + " pnt." + str(i_point) + " {} _0\n")
-            loop = loop + " pnt." + str(i_point)
-            points_shroud2.append(i_point)
-
-
+            points_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(i) + " pnt." + str(points_count) + " {} _0\n")
+            loop = loop + " pnt." + str(points_count)
+            points_shroud2.append(points_count)
+            
         loop = loop + " }"
         f.write("ic_move_geometry point names " + loop + " rotate " + str(self.wedge) + " rotate_axis {0 0 1} cent {0 0 0}\n")
         f.write("ic_geo_reset_data_structures\n")
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
+        
+
+        
+        # Rotate the curves for future hub/shroud revolution
+        lines_count = self.lines_count + 2            #Trick to avoid problems in ICEM: cannot recombine a list of lines into one with a name present in the list
+        lines_hub2 = []
+        lines_shroud2 = []
+
+        loop_hub = "{"
+        loop_shroud = ""
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        # Copy hub lines to hub2
+        for i in (self.lines_hub):
+            lines_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data curve crv." + str(i) + " crv." + str(lines_count) + " {} _0\n")
+            loop_hub = loop_hub + "crv." + str(lines_count) + " "
+            lines_hub2.append(lines_count)
+        # Copy shroud lines to shroud2
+        for i in (self.lines_shroud):
+            lines_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data curve crv." + str(i) + " crv." + str(lines_count) + " {} _0\n")
+            loop_shroud = loop_shroud + "crv." + str(lines_count) + " "
+            lines_shroud2.append(lines_count)
+            
+        loop = loop_hub + loop_shroud + "}"
+        f.write("ic_move_geometry curve names " + loop + " rotate " + str(self.wedge) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+        f.write("ic_geo_reset_data_structures\n")
+        f.write("ic_geo_configure_one_attribute surface shade wire\n")
+
+        # Recombine lines
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        f.write("ic_curve concat GEOM crv." + str(self.lines_count+1) + " " + loop_hub + "}\n")  # Recombine hub
+        f.write("ic_curve concat GEOM crv." + str(self.lines_count+2) + " {" + loop_shroud + "}\n")  # Recombine shroud
+        lines_hub2 = [self.lines_count+1]
+        lines_shroud2 = [self.lines_count+2]
         f.close()
         
         # Storing the hub2 and shroud2 point identifiers into the class.
         self.points_hub2 = points_hub2
         self.points_shroud2 = points_shroud2
+        self.points_count = points_count
 
-#         ic_set_global geo_cad 0.0006 toler
-# ic_geo_duplicate_set_fam_and_data point pnt.5 pnt.5.0 {} _0
-# ic_geo_duplicate_set_fam_and_data point pnt.4 pnt.4.0 {} _0
-# ic_move_geometry point names {pnt.5.0 pnt.4.0} rotate 30 rotate_axis {0 0 1} cent {0 0 0}
-# ic_geo_reset_data_structures 
-# ic_geo_configure_one_attribute surface shade wire
-
-
-
-
-
-        f.close()
+        # Storing the hub2 and shroud2 line identifiers into the class.
+        self.lines_hub2 = lines_hub2
+        self.lines_shroud2 = lines_shroud2
+        self.lines_count = self.lines_count+2
 
         # Storing the surface identifiers into the class.
-        self.face_simmetry = face_simmetry
+        self.faces_simmetry = faces_simmetry
+        self.surfaces_count = len(faces_simmetry)
+
+
+
+
 
 
 
@@ -410,13 +491,11 @@ class ICEM3D:
         f.close()
 
         
-
- 
-
         # Storing the line identifiers and line lengths into the class.
         self.lines_hub = lines_hub
         self.lines_shroud = lines_shroud
         self.lines_rad = lines_rad
+        self.lines_count = i_line-1
 
         self.length_hub = length_hub
         self.length_shroud = length_shroud
@@ -544,13 +623,8 @@ class ICEM3D:
         self.coords_hub = np.mat([X_hub, Y_hub, Z_hub])
         self.points_shroud = points_shroud
         self.coords_shroud = np.mat([X_shroud, Y_shroud, Z_shroud])
+        self.points_count = len(self.points_hub) + len(self.points_shroud)
 
-        # # Building the hub and shroud points in GMesh
-        # for i in range(len(X_hub)):
-        #     self.factory.addPoint(X_hub[i], Y_hub[i], Z_hub[i], 0.01, points_hub[i])
-        #     self.factory.addPoint(X_shroud[i], Y_shroud[i], Z_shroud[i], 0.01, points_shroud[i])
-
-        # Write the replay procedure for the points
 
         # Writing the hub and shroud points in ICEM .rep file
         f = open("ICEM_input.txt", "a")
