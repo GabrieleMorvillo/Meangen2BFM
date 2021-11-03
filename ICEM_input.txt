@@ -169,6 +169,10 @@ ic_set_dormant_pickable point 0 {}
 ic_geo_incident point pnt.30 1
 ic_delete_geometry point names pnt.30 0 1
 ic_set_dormant_pickable point 0 {}
+ic_point {} GEOM pnt.1 0.05459968929769247,0.20376881453646298,-0.10468899999999999
+ic_point {} GEOM pnt.6 0.061848175474833664,0.23082053322751464,0.205017
+ic_point {} GEOM pnt.7 0.15245554678432413,0.5689718464947916,-0.10468899999999999
+ic_point {} GEOM pnt.12 0.14520706060718294,0.54192012780374,0.205017
 ic_geo_new_family SOLID
 ic_boco_set_part_color SOLID
 ic_hex_initialize_blocking { point pnt.1 point pnt.2 point pnt.3 point pnt.4 point pnt.5 point pnt.6 point pnt.7 point pnt.8 point pnt.9 point pnt.10 point pnt.11 point pnt.12 point pnt.19 point pnt.20 point pnt.21 point pnt.22 point pnt.23 point pnt.24 point pnt.13 point pnt.14 point pnt.15 point pnt.16 point pnt.17 point pnt.18} SOLID 0 101
@@ -182,3 +186,43 @@ ic_hex_unstruct_face_type one_tri
 ic_hex_set_unstruct_face_method uniform_quad
 ic_hex_set_n_tetra_smoothing_steps 20
 ic_hex_error_messages off_minor
+ic_hex_split_grid 41 42 pnt.8 m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID
+ic_hex_split_grid 74 42 pnt.9 m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID
+ic_hex_split_grid 90 42 pnt.10 m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID
+ic_hex_split_grid 106 42 pnt.11 m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID
+ic_hex_move_node 37 pnt.1
+ic_hex_move_node 41 pnt.7
+ic_hex_move_node 21 pnt.13
+ic_hex_move_node 25 pnt.19
+ic_hex_move_node 70 pnt.2
+ic_hex_move_node 74 pnt.8
+ic_hex_move_node 69 pnt.14
+ic_hex_move_node 73 pnt.20
+ic_hex_move_node 86 pnt.3
+ic_hex_move_node 90 pnt.9
+ic_hex_move_node 85 pnt.15
+ic_hex_move_node 89 pnt.21
+ic_hex_move_node 102 pnt.4
+ic_hex_move_node 106 pnt.10
+ic_hex_move_node 101 pnt.16
+ic_hex_move_node 105 pnt.22
+ic_hex_move_node 118 pnt.5
+ic_hex_move_node 122 pnt.11
+ic_hex_move_node 117 pnt.17
+ic_hex_move_node 121 pnt.23
+ic_hex_move_node 38 pnt.6
+ic_hex_move_node 42 pnt.12
+ic_hex_move_node 22 pnt.18
+ic_hex_move_node 26 pnt.24
+ic_hex_set_edge_projection 37 21 0 1 crv.19
+ic_hex_set_edge_projection 41 25 0 1 crv.25
+ic_hex_set_edge_projection 70 69 0 1 crv.20
+ic_hex_set_edge_projection 74 73 0 1 crv.26
+ic_hex_set_edge_projection 86 85 0 1 crv.21
+ic_hex_set_edge_projection 90 89 0 1 crv.27
+ic_hex_set_edge_projection 102 101 0 1 crv.22
+ic_hex_set_edge_projection 106 105 0 1 crv.28
+ic_hex_set_edge_projection 118 117 0 1 crv.23
+ic_hex_set_edge_projection 122 121 0 1 crv.29
+ic_hex_set_edge_projection 38 22 0 1 crv.24
+ic_hex_set_edge_projection 42 26 0 1 crv.30

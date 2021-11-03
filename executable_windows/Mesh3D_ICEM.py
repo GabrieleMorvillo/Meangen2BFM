@@ -166,6 +166,8 @@ class ICEM3D:
     def blocking(self):
 
         f = open("ICEM_input.txt", "a")
+
+         # # Create the initial big block
         f.write("ic_geo_new_family SOLID\n")
         f.write("ic_boco_set_part_color SOLID\n")
         loop = "{"
@@ -179,7 +181,6 @@ class ICEM3D:
             loop = loop + " point pnt." + str(i)
         f.write("ic_hex_initialize_blocking " + loop + "} SOLID 0 101\n")
 
-        # # Create the initial big block
         # f.write("ic_hex_initialize_blocking {point pnt." +str(self.points_hub[0])+ " point pnt." +str(self.points_hub[-1])+
         #         " point pnt." +str(self.points_shroud[0])+ " point pnt." +str(self.points_shroud[-1])+
         #         " point pnt." +str(self.points_shroud2[0])+ " point pnt." +str(self.points_shroud2[-1])+
@@ -195,6 +196,38 @@ class ICEM3D:
         f.write("ic_hex_set_n_tetra_smoothing_steps 20\n")
         f.write("ic_hex_error_messages off_minor\n")
 
+        # Split block
+        f.write("ic_hex_split_grid 41 42 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 74 42 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 90 42 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+  
+        # Assign nodes to vertices
+        nodes_hub = [37,70,86,102,118,38]
+        nodes_shroud = [41,74,90,106,122,42]
+        nodes_hub2 = [21,69,85,101,117,22]
+        nodes_shroud2 = [25,73,89,105,121,26] 
+        for i in range(len(self.points_hub)):
+            f.write("ic_hex_move_node "+str(nodes_hub[i])+" pnt." +str(self.points_hub[i])+"\n")
+            f.write("ic_hex_move_node "+str(nodes_shroud[i])+" pnt." +str(self.points_shroud[i])+"\n")
+            f.write("ic_hex_move_node "+str(nodes_hub2[i])+" pnt." +str(self.points_hub2[i])+"\n")
+            f.write("ic_hex_move_node "+str(nodes_shroud2[i])+" pnt." +str(self.points_shroud2[i])+"\n")
+
+        # Assing edges to curves
+        for i in range(len(self.points_hub)):
+            f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
+            f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
+        
+
+
+
+
+
+
+
+
+
+
 
     def fixPoints(self):
         f = open("ICEM_input.txt", "a")
@@ -205,17 +238,12 @@ class ICEM3D:
              f.write("ic_delete_geometry point names pnt." + str(i) + " 0 1\n")
              f.write("ic_set_dormant_pickable point 0 {}\n")
 
-        f.close()
-
-
-    #     f = open("ICEM_input.txt", "a")
-
     #       # Rewrite the 8 external vertex of the wedge (ICEM problem: it overwite stuff when creating revolution surfaces)
         
-    #     f.write("ic_point {} GEOM pnt."+str(self.points_hub[0])+" "+str(self.coords_hub [0,0])+","+str(self.coords_hub [1,0])+","+str(self.coords_hub [2,0])+"\n")
-    #     f.write("ic_point {} GEOM pnt."+str(self.points_hub[-1])+" "+str(self.coords_hub [0,-1])+","+str(self.coords_hub [1,-1])+","+str(self.coords_hub [2,-1])+"\n")
-    #     f.write("ic_point {} GEOM pnt."+str(self.points_shroud[0])+" "+str(self.coords_shroud [0,0])+","+str(self.coords_shroud [1,0])+","+str(self.coords_shroud [2,0])+"\n")
-    #     f.write("ic_point {} GEOM pnt."+str(self.points_shroud[-1])+" "+str(self.coords_shroud [0,-1])+","+str(self.coords_shroud [1,-1])+","+str(self.coords_shroud [2,-1])+"\n")
+        f.write("ic_point {} GEOM pnt."+str(self.points_hub[0])+" "+str(self.coords_hub [0,0])+","+str(self.coords_hub [1,0])+","+str(self.coords_hub [2,0])+"\n")
+        f.write("ic_point {} GEOM pnt."+str(self.points_hub[-1])+" "+str(self.coords_hub [0,-1])+","+str(self.coords_hub [1,-1])+","+str(self.coords_hub [2,-1])+"\n")
+        f.write("ic_point {} GEOM pnt."+str(self.points_shroud[0])+" "+str(self.coords_shroud [0,0])+","+str(self.coords_shroud [1,0])+","+str(self.coords_shroud [2,0])+"\n")
+        f.write("ic_point {} GEOM pnt."+str(self.points_shroud[-1])+" "+str(self.coords_shroud [0,-1])+","+str(self.coords_shroud [1,-1])+","+str(self.coords_shroud [2,-1])+"\n")
         
     #     f.write("ic_set_global geo_cad 0.0006 toler\n")
     #     f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_hub[0]) + " pnt." + str(self.points_hub2[0]) + " {} _0\n")
@@ -228,7 +256,7 @@ class ICEM3D:
     #     f.write("ic_geo_reset_data_structures\n")
     #     f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
-    #     f.close()
+        f.close()
 
 
 
