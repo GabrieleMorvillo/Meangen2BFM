@@ -81,11 +81,6 @@ for i in range(n_stage):
         os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_2")
         shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
 
-        #os.system("mkdir Stage_"+str(i+1))
-        #os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_1")
-        #os.system("mv Bladerow_" + str(2 * i + 1) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_1/Bladerow.cfg")
-        #os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_2")
-        #os.system("mv Bladerow_" + str(2 * i + 2) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_2/Bladerow.cfg")
 
 # Checking for body-force and/or blade mesh option.
 BFM = False

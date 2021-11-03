@@ -67,22 +67,6 @@ ic_move_geometry surface names srf.2 rotate 30 rotate_axis {0 0 1} cent {0 0 0}
 ic_geo_reset_data_structures
 ic_geo_configure_one_attribute surface shade wire
 ic_set_global geo_cad 0.0006 toler
-ic_geo_duplicate_set_fam_and_data point pnt.1 pnt.13 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.2 pnt.14 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.3 pnt.15 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.4 pnt.16 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.5 pnt.17 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.6 pnt.18 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.7 pnt.19 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.8 pnt.20 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.9 pnt.21 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.10 pnt.22 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.11 pnt.23 {} _0
-ic_geo_duplicate_set_fam_and_data point pnt.12 pnt.24 {} _0
-ic_move_geometry point names { pnt.13 pnt.14 pnt.15 pnt.16 pnt.17 pnt.18 pnt.19 pnt.20 pnt.21 pnt.22 pnt.23 pnt.24 } rotate 30 rotate_axis {0 0 1} cent {0 0 0}
-ic_geo_reset_data_structures
-ic_geo_configure_one_attribute surface shade wire
-ic_set_global geo_cad 0.0006 toler
 ic_geo_duplicate_set_fam_and_data curve crv.1 crv.19 {} _0
 ic_geo_duplicate_set_fam_and_data curve crv.2 crv.20 {} _0
 ic_geo_duplicate_set_fam_and_data curve crv.3 crv.21 {} _0
@@ -99,19 +83,51 @@ ic_geo_configure_one_attribute surface shade wire
 ic_set_global geo_cad 0.0006 toler
 ic_curve concat GEOM crv.17 {crv.19 crv.20 crv.21 crv.22 crv.23 }
 ic_curve concat GEOM crv.18 {crv.24 crv.25 crv.26 crv.27 crv.28 }
+ic_set_global geo_cad 0.0006 toler
+ic_geo_duplicate_set_fam_and_data point pnt.1 pnt.13 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.2 pnt.14 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.3 pnt.15 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.4 pnt.16 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.5 pnt.17 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.6 pnt.18 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.7 pnt.19 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.8 pnt.20 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.9 pnt.21 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.10 pnt.22 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.11 pnt.23 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.12 pnt.24 {} _0
+ic_move_geometry point names { pnt.13 pnt.14 pnt.15 pnt.16 pnt.17 pnt.18 pnt.19 pnt.20 pnt.21 pnt.22 pnt.23 pnt.24 } rotate 30 rotate_axis {0 0 1} cent {0 0 0}
+ic_geo_reset_data_structures
+ic_geo_configure_one_attribute surface shade wire
 ic_set_global geo_cad 0.0002 toler
-ic_point {} GEOM pnt.25 0,0,0
-ic_point {} GEOM pnt.26 0,0,1
+ic_point {} GEOM pnt.25 0,0,-0.10468899999999999
+ic_point {} GEOM pnt.26 0,0,-0.001409
+ic_point {} GEOM pnt.27 0,0,0.050231
+ic_point {} GEOM pnt.28 0,0,0.054999
+ic_point {} GEOM pnt.29 0,0,0.105005
+ic_point {} GEOM pnt.30 0,0,0.205017
 ic_set_global geo_cad 0.0006 toler
-ic_geo_cre_srf_rev GEOM srf.3 crv.17 pnt.25 {0 0 1} 0 30 c 1
+ic_geo_cre_srf_rev GEOM srf.3 crv.17 pnt.29 {0 0 1} 0 30 c 1
 ic_set_global geo_cad 0.001 toler
 ic_set_dormant_pickable point 0 {}
 ic_set_dormant_pickable curve 0 {}
 ic_set_global geo_cad 0.0006 toler
-ic_geo_cre_srf_rev GEOM srf.4 crv.18 pnt.25 {0 0 1} 0 30 c 1
+ic_geo_cre_srf_rev GEOM srf.4 crv.18 pnt.29 {0 0 1} 0 30 c 1
 ic_set_global geo_cad 0.001 toler
 ic_set_dormant_pickable point 0 {}
 ic_set_dormant_pickable curve 0 {}
+ic_curve arc_ctr_rad GEOM crv.19 {pnt.25 pnt.1 pnt.13 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.20 {pnt.26 pnt.2 pnt.14 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.21 {pnt.27 pnt.3 pnt.15 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.22 {pnt.28 pnt.4 pnt.16 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.23 {pnt.29 pnt.5 pnt.17 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.24 {pnt.30 pnt.6 pnt.18 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.25 {pnt.25 pnt.7 pnt.19 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.26 {pnt.26 pnt.8 pnt.20 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.27 {pnt.27 pnt.9 pnt.21 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.28 {pnt.28 pnt.10 pnt.22 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.29 {pnt.29 pnt.11 pnt.23 0.0 {} {} 0}
+ic_curve arc_ctr_rad GEOM crv.30 {pnt.30 pnt.12 pnt.24 0.0 {} {} 0}
 ic_set_global geo_cad 0.0006 toler
 ic_geo_cre_srf_rev GEOM srf.5 crv.16 pnt.25 {0 0 1} 0 -30 c 1
 ic_set_global geo_cad 0.001 toler
@@ -132,5 +148,37 @@ ic_geo_set_part surface srf.4 SHROUD_WALL 0
 ic_delete_empty_parts
 ic_geo_set_part surface srf.5 INLET 0
 ic_delete_empty_parts
-ic_set_family_color_for_name INLET #00ff00ic_geo_set_part surface srf.6 OUTLET 0
+ic_set_family_color_for_name INLET #00ff00
+ic_geo_set_part surface srf.6 OUTLET 0
 ic_delete_empty_parts
+ic_geo_incident point pnt.25 1
+ic_delete_geometry point names pnt.25 0 1
+ic_set_dormant_pickable point 0 {}
+ic_geo_incident point pnt.26 1
+ic_delete_geometry point names pnt.26 0 1
+ic_set_dormant_pickable point 0 {}
+ic_geo_incident point pnt.27 1
+ic_delete_geometry point names pnt.27 0 1
+ic_set_dormant_pickable point 0 {}
+ic_geo_incident point pnt.28 1
+ic_delete_geometry point names pnt.28 0 1
+ic_set_dormant_pickable point 0 {}
+ic_geo_incident point pnt.29 1
+ic_delete_geometry point names pnt.29 0 1
+ic_set_dormant_pickable point 0 {}
+ic_geo_incident point pnt.30 1
+ic_delete_geometry point names pnt.30 0 1
+ic_set_dormant_pickable point 0 {}
+ic_geo_new_family SOLID
+ic_boco_set_part_color SOLID
+ic_hex_initialize_blocking { point pnt.1 point pnt.2 point pnt.3 point pnt.4 point pnt.5 point pnt.6 point pnt.7 point pnt.8 point pnt.9 point pnt.10 point pnt.11 point pnt.12 point pnt.19 point pnt.20 point pnt.21 point pnt.22 point pnt.23 point pnt.24 point pnt.13 point pnt.14 point pnt.15 point pnt.16 point pnt.17 point pnt.18} SOLID 0 101
+ic_hex_unblank_blocks 
+ic_hex_multi_grid_level 0
+ic_hex_projection_limit 0
+ic_hex_default_bunching_law default 2.0
+ic_hex_floating_grid off
+ic_hex_transfinite_degree 1
+ic_hex_unstruct_face_type one_tri
+ic_hex_set_unstruct_face_method uniform_quad
+ic_hex_set_n_tetra_smoothing_steps 20
+ic_hex_error_messages off_minor
