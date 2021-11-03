@@ -112,3 +112,25 @@ ic_geo_cre_srf_rev GEOM srf.4 crv.18 pnt.25 {0 0 1} 0 30 c 1
 ic_set_global geo_cad 0.001 toler
 ic_set_dormant_pickable point 0 {}
 ic_set_dormant_pickable curve 0 {}
+ic_set_global geo_cad 0.0006 toler
+ic_geo_cre_srf_rev GEOM srf.5 crv.16 pnt.25 {0 0 1} 0 -30 c 1
+ic_set_global geo_cad 0.001 toler
+ic_set_dormant_pickable point 0 {}
+ic_set_dormant_pickable curve 0 {}
+ic_set_global geo_cad 0.0006 toler
+ic_geo_cre_srf_rev GEOM srf.6 crv.11 pnt.25 {0 0 1} 0 -30 c 1
+ic_set_global geo_cad 0.001 toler
+ic_set_dormant_pickable point 0 {}
+ic_set_dormant_pickable curve 0 {}
+ic_geo_set_part surface srf.1 RIGHT_SYM 0
+ic_delete_empty_parts
+ic_geo_set_part surface srf.2 LEFT_SYM 0
+ic_delete_empty_parts
+ic_geo_set_part surface srf.3 HUB_WALL 0
+ic_delete_empty_parts
+ic_geo_set_part surface srf.4 SHROUD_WALL 0
+ic_delete_empty_parts
+ic_geo_set_part surface srf.5 INLET 0
+ic_delete_empty_parts
+ic_set_family_color_for_name INLET #00ff00ic_geo_set_part surface srf.6 OUTLET 0
+ic_delete_empty_parts

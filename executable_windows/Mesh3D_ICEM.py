@@ -79,8 +79,13 @@ class ICEM3D:
         # Revolving hub and shroud around rotation axis to create walls.
         self.makeWalls()
 
-        # # Setting names to boundaries.
-        # self.nameBoundaries()
+        # Revolving radial lines around rotation axis to create inlet and outlet.
+        self.makeInOut()
+        
+        # self.refineLines()
+
+        # Setting names to boundaries.
+        self.nameBoundaries()
 
         # # Creating 3D mesh.
         # gmsh.model.geo.synchronize()
@@ -153,56 +158,31 @@ class ICEM3D:
     #     # Executing SU2_PERIO to create periodic mesh and storing output in output file.
     #     os.system("SU2_PERIO createPerio.cfg > SU2_PERIO.out")
 
-    # def nameBoundaries(self):
-    #     # This function gives names to all the boundaries of the 3D mesh so boundary conditions can be assigned in the
-    #     # SU2 configuration file.
+    def nameBoundaries(self):
+        # This function gives names to all the boundaries of the 3D mesh so boundary conditions can be assigned in the
+        # SU2 configuration file.
+        f = open("ICEM_input.txt", "a")
 
-    #     # Specifying periodic boundaries.
-    #     # First periodic boundary is the plane created by makePlane().
-    #     periodic_1 = self.model.addPhysicalGroup(2, [1])
-    #     self.model.setPhysicalName(2, periodic_1, "periodic_1")
-    #     self.model.setColor([(2, 1)], 255, 255, 0)
-    #     # Second periodic boundary is the first plane in the revolution volume list.
-    #     periodic_2 = self.model.addPhysicalGroup(2, [self.Rev[0][1]])
-    #     self.model.setPhysicalName(2, periodic_2, "periodic_2")
-    #     self.model.setColor([self.Rev[-1]], 255, 102, 0)
+        # Create left and right symmetric surfaces
+        f.write("ic_geo_set_part surface srf." +str(self.faces_simmetry[0])+ " RIGHT_SYM 0\n")
+        f.write("ic_delete_empty_parts\n")
+        f.write("ic_geo_set_part surface srf." +str(self.faces_simmetry[-1])+ " LEFT_SYM 0\n")
+        f.write("ic_delete_empty_parts\n")
 
-    #     # Setting the revolution volume as a 3D physical group.
-    #     self.model.addPhysicalGroup(3, [1], 1)
-    #     self.model.setPhysicalName(3, 1, "FlowField")
-    #     # self.model.setColor((3, 1), 255, 102, 0)
-    #     # Going over the other surfaces of the revolution volume and naming them accordingly.
-    #     i = 2
+        # Create walls surfaces
+        f.write("ic_geo_set_part surface srf." +str(self.walls[0])+ " HUB_WALL 0\n")
+        f.write("ic_delete_empty_parts\n")
+        f.write("ic_geo_set_part surface srf." +str(self.walls[-1])+ " SHROUD_WALL 0\n")
+        f.write("ic_delete_empty_parts\n")
 
-    #     # Naming the inlet boundary.
-    #     inlet = self.model.addPhysicalGroup(2, [self.Rev[i][1]])
-    #     self.model.setPhysicalName(2, inlet, "inlet")
-    #     self.model.setColor([self.Rev[i]], 255, 0, 0)
-    #     i += 1
-
-    #     # Appending all planes on the shroud side of the volume to a single shroud boundary.
-    #     shroud_list = []
-    #     for j in range(i, i + 3 * self.M.n_stage + 2):
-    #         shroud_list.append(self.Rev[j][1])
-    #         i += 1
-    #     shroud = self.model.addPhysicalGroup(2, shroud_list)
-    #     self.model.setPhysicalName(2, shroud, "shroud")
-    #     self.model.setColor([(2, j) for j in shroud_list], 0, 255, 0)
-
-    #     # Naming the outlet boundary
-    #     outlet = self.model.addPhysicalGroup(2, [self.Rev[i][1]])
-    #     self.model.setPhysicalName(2, outlet, "outlet")
-    #     self.model.setColor([self.Rev[i]], 0, 0, 255)
-    #     i += 1
-
-    #     # Appending all planes on the shroud side of the volume to a single shroud boundary.
-    #     hub_list = []
-    #     for j in range(i, i + 3 * self.M.n_stage + 2):
-    #         hub_list.append(self.Rev[j][1])
-    #         i += 1
-    #     hub = self.model.addPhysicalGroup(2, hub_list)
-    #     self.model.setPhysicalName(2, hub, "hub")
-    #     self.model.setColor([(2, j) for j in hub_list], 255, 0, 255)
+        # Create inlet and outlet
+        f.write("ic_geo_set_part surface srf." +str(self.inlet[0])+ " INLET 0\n")
+        f.write("ic_delete_empty_parts\n")
+        f.write("ic_set_family_color_for_name INLET #00ff00\n")
+        f.write("ic_geo_set_part surface srf." +str(self.outlet[0])+ " OUTLET 0\n")
+        f.write("ic_delete_empty_parts\n")
+        
+        f.close()
 
     # def refineLines(self):
     #     # This function sets the number of nodes along each of the curves bounding the geometry. This allows for
@@ -251,6 +231,39 @@ class ICEM3D:
     #             else:
     #                 L_av = 0.5 * (self.length_hub[i] + self.length_shroud[i])
     #             self.model.mesh.setTransfiniteCurve(self.lines_rad[i], max([int(self.n_point*self.length_rad[i]/L_av), 3]))
+    
+
+    def makeInOut(self):
+        # This function revolves the radial curves around the rotation axis to create the inlet and outlet.
+        # The center point of the revolution is located at the origin and the rotation axis is set to be the z-axis.
+        inlet = []
+        outlet = []
+        i_surf = self.surfaces_count
+        f = open("ICEM_input.txt", "a")
+
+        line_inlet= str(self.lines_rad[-1])
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_inlet + " pnt." + str(self.points_rot_axis[0]) + " {0 0 1} 0 " + str(-self.wedge) + " c 1\n")
+        f.write("ic_set_global geo_cad 0.001 toler\n")
+        f.write("ic_set_dormant_pickable point 0 {}\n")
+        f.write("ic_set_dormant_pickable curve 0 {}\n")
+        inlet.append(i_surf+1)
+
+        line_outlet= str(self.lines_rad[0])
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_outlet + " pnt." + str(self.points_rot_axis[0]) + " {0 0 1} 0 " + str(-self.wedge) + " c 1\n")
+        f.write("ic_set_global geo_cad 0.001 toler\n")
+        f.write("ic_set_dormant_pickable point 0 {}\n")
+        f.write("ic_set_dormant_pickable curve 0 {}\n")
+        outlet.append(i_surf+2)
+
+        f.close()
+
+        # Storing the inlet and outlet surface identifiers into the class.
+        self.inlet = inlet
+        self.outlet = outlet
+        self.surfaces_count += (len(inlet) + len(outlet))
+
 
     def makeWalls(self):
         # This function revolves the hub and shroud curves around the rotation axis to create the solid walls.
@@ -274,19 +287,11 @@ class ICEM3D:
         self.points_count = points_count
 
        
-        # Revolve the hub curves 
+        # Revolve the hub and shroud curves 
         walls = []
         i_surf = self.surfaces_count
+
         line_hub2= str(self.lines_hub2[0])
-        # loop = " {"
-        # for i in self.lines_hub:
-        #     loop = loop + " crv." + str(i)
-        # loop = loop + " }"
-        # f.write("ic_set_global geo_cad 0.0006 toler\n")
-        # f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) +  loop + " pnt." + str(points_count-1) + "{0 0 1} 0 " + str(self.wedge) + " c 1\n")
-        # f.write("ic_set_global geo_cad 0.001 toler\n")
-        # f.write("ic_set_dormant_pickable point 0 {}\n")
-        # f.write("ic_set_dormant_pickable curve 0 {}\n")
         f.write("ic_set_global geo_cad 0.0006 toler\n")
         f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_hub2 + " pnt." + str(points_count-1) + " {0 0 1} 0 " + str(self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
@@ -294,16 +299,6 @@ class ICEM3D:
         f.write("ic_set_dormant_pickable curve 0 {}\n")
         walls.append(i_surf+1)
         
-        # Revolve the shroud curves 
-        # loop = " {"
-        # for i in self.lines_shroud:
-        #     loop = loop + " crv." + str(i)
-        # loop = loop + " }"
-        # f.write("ic_set_global geo_cad 0.0006 toler\n")
-        # f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) +  loop + " pnt." + str(points_count-1) + "{0 0 1} 0 " + str(self.wedge) + " c 1\n")
-        # f.write("ic_set_global geo_cad 0.001 toler\n")
-        # f.write("ic_set_dormant_pickable point 0 {}\n")
-        # f.write("ic_set_dormant_pickable curve 0 {}\n")
         line_shroud2= str(self.lines_shroud2[0])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
         f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_shroud2 + " pnt." + str(points_count-1) + " {0 0 1} 0 " + str(self.wedge) + " c 1\n")
@@ -328,7 +323,7 @@ class ICEM3D:
         # This function takes the lines defining the hub, shroud, inlet and outlet and builds a plane surface bound by
         # the meridional shape.
         # Then the other face with symmetric B.C. (wedge sides) is created by rotating the previous one around z axis.
-        # Last step is to rotate the reference points from the original surface onto the new one.
+        # Last step is to rotate the reference points and radial lines from the original surface onto the new one.
 
         faces_simmetry =[]
         i_face = 1 #Initialize surface count
@@ -425,7 +420,8 @@ class ICEM3D:
         lines_hub2 = [self.lines_count+1]
         lines_shroud2 = [self.lines_count+2]
         f.close()
-        
+
+
         # Storing the hub2 and shroud2 point identifiers into the class.
         self.points_hub2 = points_hub2
         self.points_shroud2 = points_shroud2
