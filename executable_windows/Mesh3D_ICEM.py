@@ -38,6 +38,7 @@ class ICEM3D:
         self.inlet_fac = IN["INLET_FACTOR"][0]          # Importing inlet cell size factor
         self.outlet_fac = IN["OUTLET_FACTOR"][0]        # Importing outlet cell size factor
         self.rot_axis = IN["Rotation_axis"]
+        self.BL_thick = IN["BOUNDARY_LAYER_THICKNESS"][0]
 
         self.Coords = type('', (), {})()
         # # Initiating Gmesh.
@@ -91,9 +92,9 @@ class ICEM3D:
         # Make the blocks
         self.blocking()
 
-        # # Creating 3D mesh.
+        # Creating 3D mesh.
         # self.mesh()
-        # gmsh.model.geo.synchronize()
+        
 
         # # Applying mesh refinement along the lines in the mesh
         # self.refineLines()
@@ -163,6 +164,17 @@ class ICEM3D:
     #     # Executing SU2_PERIO to create periodic mesh and storing output in output file.
     #     os.system("SU2_PERIO createPerio.cfg > SU2_PERIO.out")
 
+
+    def mesh(self):
+         f = open("ICEM_input.txt", "a")
+         f.write("ic_hex_create_mesh GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3\n")
+         f.close()
+
+
+
+
+
+
     def blocking(self):
 
         f = open("ICEM_input.txt", "a")
@@ -213,15 +225,21 @@ class ICEM3D:
             f.write("ic_hex_move_node "+str(nodes_hub2[i])+" pnt." +str(self.points_hub2[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_shroud2[i])+" pnt." +str(self.points_shroud2[i])+"\n")
 
-        # Assing edges to curves
+        # Assign edges to curves
         for i in range(len(self.points_hub)):
             f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
             f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
         
-
-
-
-
+        # Seed the edges in axial direction
+        f.write("ic_hex_set_mesh 37 70 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 70 86 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[1])+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 86 102 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[2])+" h2rel "+str(self.BL_thick/self.length_hub[2])+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 102 118 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 118 38 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[4])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
+        
+        # Seed the edges in radial direction
+        n_radial = round(self.n_point*self.length_rad[0]/self.length_hub[0])
+        f.write("ic_hex_set_mesh 37 41 n "+str(n_radial)+" h1rel "+str(0.01)+" h2rel "+str(0.01)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
 
 
 
@@ -238,13 +256,63 @@ class ICEM3D:
              f.write("ic_delete_geometry point names pnt." + str(i) + " 0 1\n")
              f.write("ic_set_dormant_pickable point 0 {}\n")
 
-    #       # Rewrite the 8 external vertex of the wedge (ICEM problem: it overwite stuff when creating revolution surfaces)
+    #   # Rewrite the 4 external vertex of the wedge (ICEM problem: it overwite stuff when creating revolution surfaces)
         
         f.write("ic_point {} GEOM pnt."+str(self.points_hub[0])+" "+str(self.coords_hub [0,0])+","+str(self.coords_hub [1,0])+","+str(self.coords_hub [2,0])+"\n")
         f.write("ic_point {} GEOM pnt."+str(self.points_hub[-1])+" "+str(self.coords_hub [0,-1])+","+str(self.coords_hub [1,-1])+","+str(self.coords_hub [2,-1])+"\n")
         f.write("ic_point {} GEOM pnt."+str(self.points_shroud[0])+" "+str(self.coords_shroud [0,0])+","+str(self.coords_shroud [1,0])+","+str(self.coords_shroud [2,0])+"\n")
         f.write("ic_point {} GEOM pnt."+str(self.points_shroud[-1])+" "+str(self.coords_shroud [0,-1])+","+str(self.coords_shroud [1,-1])+","+str(self.coords_shroud [2,-1])+"\n")
         
+
+
+        # Rotate the reference points for future blocking set
+        lines_wall_hub = self.lines_wall_hub
+        lines_wall_shroud = self.lines_wall_shroud
+        points_count = self.points_count
+        points_count = self.points_count
+        points_lines_wall_hub3 = []
+        points_lines_wall_hub23 = []
+        points_lines_wall_shroud3 = []
+        points_lines_wall_shroud23 = []
+
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+       
+        for i in range(len(lines_wall_hub)):
+            points_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_hub[i]) + " pnt." + str(points_count) + " {} _0\n")
+            points_lines_wall_hub3.append(points_count)
+            points_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_hub[i]) + " pnt." + str(points_count) + " {} _0\n")
+            points_lines_wall_hub23.append(points_count)
+        
+        for i in range(len(lines_wall_shroud)):
+            points_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_shroud[i]) + " pnt." + str(points_count) + " {} _0\n")
+            points_lines_wall_shroud3.append(points_count)
+            points_count += 1
+            f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_shroud[i]) + " pnt." + str(points_count) + " {} _0\n")
+            points_lines_wall_shroud23.append(points_count)
+            
+        loop3 = "{"     
+        for i in range(len(lines_wall_hub)):
+            loop3 = loop3 + " pnt."+ str( points_lines_wall_hub3[i])
+        for i in range(len(lines_wall_shroud)):
+            loop3 = loop3 + " pnt."+str(points_lines_wall_shroud3[i])
+        loop3 = loop3 + " }"
+
+        loop23 = "{"     
+        for i in points_lines_wall_hub23:
+            loop23 = loop23 + " pnt."+str(i)
+        for i in points_lines_wall_shroud23:
+            loop23 = loop23 + " pnt."+str(i) 
+        loop23 = loop23 + " }"
+
+
+        f.write("ic_move_geometry point names " + loop3 + " rotate " + str(self.wedge/3) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+        f.write("ic_move_geometry point names " + loop23 + " rotate " + str(self.wedge*2/3) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+        f.write("ic_geo_reset_data_structures\n")
+        f.write("ic_geo_configure_one_attribute surface shade wire\n")
+
     #     f.write("ic_set_global geo_cad 0.0006 toler\n")
     #     f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_hub[0]) + " pnt." + str(self.points_hub2[0]) + " {} _0\n")
     #     f.write("ic_geo_duplicate_set_fam_and_data point pnt." + str(self.points_hub[-1]) + " pnt." + str(self.points_hub2[-1]) + " {} _0\n")
@@ -331,6 +399,10 @@ class ICEM3D:
         self.surfaces_count += (len(inlet) + len(outlet))
 
 
+
+
+
+
     def makeWalls(self):
         # This function revolves the hub and shroud curves around the rotation axis to create the solid walls.
         # The center point of the revolution is located at the origin and the rotation axis is set to be the z-axis.
@@ -366,7 +438,7 @@ class ICEM3D:
         f.write("ic_set_dormant_pickable curve 0 {}\n")
         walls.append(i_surf+2)
 
-        # Create wall lines as a reference for blocks edges association
+        # Create wall lines as a reference for blocks edges association. Also need 2 point per line
         lines_count = self.lines_count
         lines_wall_hub = []
         for i in range(len(points_rot_axis)):
@@ -378,6 +450,9 @@ class ICEM3D:
             lines_count += 1 
             lines_wall_shroud.append(lines_count)
             f.write("ic_curve arc_ctr_rad GEOM crv."+str(lines_count)+" {pnt."+str(points_rot_axis[i])+" pnt."+str(self.points_shroud[i])+" pnt."+str(self.points_shroud2[i])+" 0.0 {} {} 0}\n")
+        
+        
+
 
         f.close()
 

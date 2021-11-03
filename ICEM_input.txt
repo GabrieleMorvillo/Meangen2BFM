@@ -173,6 +173,35 @@ ic_point {} GEOM pnt.1 0.05459968929769247,0.20376881453646298,-0.10468899999999
 ic_point {} GEOM pnt.6 0.061848175474833664,0.23082053322751464,0.205017
 ic_point {} GEOM pnt.7 0.15245554678432413,0.5689718464947916,-0.10468899999999999
 ic_point {} GEOM pnt.12 0.14520706060718294,0.54192012780374,0.205017
+ic_set_global geo_cad 0.0006 toler
+ic_geo_duplicate_set_fam_and_data point pnt.1 pnt.31 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.1 pnt.32 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.2 pnt.33 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.2 pnt.34 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.3 pnt.35 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.3 pnt.36 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.4 pnt.37 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.4 pnt.38 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.5 pnt.39 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.5 pnt.40 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.6 pnt.41 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.6 pnt.42 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.7 pnt.43 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.7 pnt.44 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.8 pnt.45 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.8 pnt.46 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.9 pnt.47 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.9 pnt.48 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.10 pnt.49 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.10 pnt.50 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.11 pnt.51 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.11 pnt.52 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.12 pnt.53 {} _0
+ic_geo_duplicate_set_fam_and_data point pnt.12 pnt.54 {} _0
+ic_move_geometry point names { pnt.31 pnt.33 pnt.35 pnt.37 pnt.39 pnt.41 pnt.43 pnt.45 pnt.47 pnt.49 pnt.51 pnt.53 } rotate 10.0 rotate_axis {0 0 1} cent {0 0 0}
+ic_move_geometry point names { pnt.32 pnt.34 pnt.36 pnt.38 pnt.40 pnt.42 pnt.44 pnt.46 pnt.48 pnt.50 pnt.52 pnt.54 } rotate 20.0 rotate_axis {0 0 1} cent {0 0 0}
+ic_geo_reset_data_structures
+ic_geo_configure_one_attribute surface shade wire
 ic_geo_new_family SOLID
 ic_boco_set_part_color SOLID
 ic_hex_initialize_blocking { point pnt.1 point pnt.2 point pnt.3 point pnt.4 point pnt.5 point pnt.6 point pnt.7 point pnt.8 point pnt.9 point pnt.10 point pnt.11 point pnt.12 point pnt.19 point pnt.20 point pnt.21 point pnt.22 point pnt.23 point pnt.24 point pnt.13 point pnt.14 point pnt.15 point pnt.16 point pnt.17 point pnt.18} SOLID 0 101
@@ -226,3 +255,9 @@ ic_hex_set_edge_projection 118 117 0 1 crv.23
 ic_hex_set_edge_projection 122 121 0 1 crv.29
 ic_hex_set_edge_projection 38 22 0 1 crv.24
 ic_hex_set_edge_projection 42 26 0 1 crv.30
+ic_hex_set_mesh 37 70 n 50 h1rel 0.05 h2rel 0.00013555383423702555 r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked
+ic_hex_set_mesh 70 86 n 50 h1rel 0.00024188543647073196 h2rel 0.00024188543647073196 r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked
+ic_hex_set_mesh 86 102 n 50 h1rel 0.0029230785268700545 h2rel 0.0029230785268700545 r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked
+ic_hex_set_mesh 102 118 n 50 h1rel 0.0002798545452281132 h2rel 0.0002798545452281132 r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked
+ic_hex_set_mesh 118 38 n 50 h1rel 0.0001399832020157581 h2rel 0.05 r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked
+ic_hex_set_mesh 37 41 n 183 h1rel 0.01 h2rel 0.01 r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked
