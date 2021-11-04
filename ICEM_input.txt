@@ -255,9 +255,88 @@ ic_hex_set_edge_projection 118 117 0 1 crv.23
 ic_hex_set_edge_projection 122 121 0 1 crv.29
 ic_hex_set_edge_projection 38 22 0 1 crv.24
 ic_hex_set_edge_projection 42 26 0 1 crv.30
+ic_hex_mark_blocks superblock 13
+ic_hex_mark_blocks superblock 27
+ic_hex_mark_blocks superblock 28
+ic_hex_mark_blocks superblock 29
+ic_hex_mark_blocks superblock 30
+ic_hex_mark_blocks face_neighbors corners {21 37 25 41} {69 70 73 74} {85 86 89 90} {101 102 105 106} {117 118 121 122} {22 38 26 42} {25 73 41 74} {73 89 74 90} {89 105 90 106} {105 121 106 122} {121 26 122 42} 
+ic_hex_ogrid 1 m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50
+ic_hex_mark_blocks unmark
+ic_hex_move_node 153 pnt.31
+ic_hex_move_node 161 pnt.43
+ic_hex_move_node 129 pnt.32
+ic_hex_move_node 137 pnt.44
+ic_hex_move_node 154 pnt.33
+ic_hex_move_node 162 pnt.45
+ic_hex_move_node 130 pnt.34
+ic_hex_move_node 138 pnt.46
+ic_hex_move_node 155 pnt.35
+ic_hex_move_node 163 pnt.47
+ic_hex_move_node 131 pnt.36
+ic_hex_move_node 139 pnt.48
+ic_hex_move_node 156 pnt.37
+ic_hex_move_node 164 pnt.49
+ic_hex_move_node 132 pnt.38
+ic_hex_move_node 140 pnt.50
+ic_hex_move_node 157 pnt.39
+ic_hex_move_node 165 pnt.51
+ic_hex_move_node 133 pnt.40
+ic_hex_move_node 141 pnt.52
+ic_hex_move_node 158 pnt.41
+ic_hex_move_node 166 pnt.53
+ic_hex_move_node 134 pnt.42
+ic_hex_move_node 142 pnt.54
+ic_hex_set_edge_projection 37 153 0 1 crv.19
+ic_hex_set_edge_projection 153 129 0 1 crv.19
+ic_hex_set_edge_projection 129 21 0 1 crv.19
+ic_hex_set_edge_projection 41 161 0 1 crv.25
+ic_hex_set_edge_projection 161 137 0 1 crv.25
+ic_hex_set_edge_projection 137 25 0 1 crv.25
+ic_hex_set_edge_projection 70 154 0 1 crv.20
+ic_hex_set_edge_projection 154 130 0 1 crv.20
+ic_hex_set_edge_projection 130 69 0 1 crv.20
+ic_hex_set_edge_projection 74 162 0 1 crv.26
+ic_hex_set_edge_projection 162 138 0 1 crv.26
+ic_hex_set_edge_projection 138 73 0 1 crv.26
+ic_hex_set_edge_projection 86 155 0 1 crv.21
+ic_hex_set_edge_projection 155 131 0 1 crv.21
+ic_hex_set_edge_projection 131 85 0 1 crv.21
+ic_hex_set_edge_projection 90 163 0 1 crv.27
+ic_hex_set_edge_projection 163 139 0 1 crv.27
+ic_hex_set_edge_projection 139 89 0 1 crv.27
+ic_hex_set_edge_projection 102 156 0 1 crv.22
+ic_hex_set_edge_projection 156 132 0 1 crv.22
+ic_hex_set_edge_projection 132 101 0 1 crv.22
+ic_hex_set_edge_projection 106 164 0 1 crv.28
+ic_hex_set_edge_projection 164 140 0 1 crv.28
+ic_hex_set_edge_projection 140 105 0 1 crv.28
+ic_hex_set_edge_projection 118 157 0 1 crv.23
+ic_hex_set_edge_projection 157 133 0 1 crv.23
+ic_hex_set_edge_projection 133 117 0 1 crv.23
+ic_hex_set_edge_projection 122 165 0 1 crv.29
+ic_hex_set_edge_projection 165 141 0 1 crv.29
+ic_hex_set_edge_projection 141 121 0 1 crv.29
+ic_hex_set_edge_projection 38 158 0 1 crv.24
+ic_hex_set_edge_projection 158 134 0 1 crv.24
+ic_hex_set_edge_projection 134 22 0 1 crv.24
+ic_hex_set_edge_projection 42 166 0 1 crv.30
+ic_hex_set_edge_projection 166 142 0 1 crv.30
+ic_hex_set_edge_projection 142 26 0 1 crv.30
+ic_hex_mark_blocks superblock 36
+ic_hex_change_element_id VORFN
+ic_hex_mark_blocks superblock 39
+ic_hex_change_element_id VORFN
+ic_hex_mark_blocks superblock 42
+ic_hex_change_element_id VORFN
+ic_hex_mark_blocks superblock 45
+ic_hex_change_element_id VORFN
+ic_hex_mark_blocks superblock 48
+ic_hex_change_element_id VORFN
 ic_hex_set_mesh 37 70 n 50 h1rel 0.05 h2rel 0.00013555383423702555 r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked
 ic_hex_set_mesh 70 86 n 50 h1rel 0.00024188543647073196 h2rel 0.00024188543647073196 r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked
 ic_hex_set_mesh 86 102 n 50 h1rel 0.0029230785268700545 h2rel 0.0029230785268700545 r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked
 ic_hex_set_mesh 102 118 n 50 h1rel 0.0002798545452281132 h2rel 0.0002798545452281132 r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked
 ic_hex_set_mesh 118 38 n 50 h1rel 0.0001399832020157581 h2rel 0.05 r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked
 ic_hex_set_mesh 37 41 n 183 h1rel 0.01 h2rel 0.01 r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked
+ic_hex_create_mesh GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3
