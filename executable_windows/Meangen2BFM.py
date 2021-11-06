@@ -47,8 +47,9 @@ DIR = os.getcwd()
 #                     '\n\tMakeBlade.py <configuration file name>')
 t_start = time.time()
 
+# Manual input
 INFile = DIR + '\\templates\\M2P_fan_stage.cfg'
-# INFile = '/home/gabbo/Documents/bitbucket_local/fan-stage-design/M2P.cfg'
+
 IN = ReadUserInput(INFile)
 
 # Executing Meangen and writing Parablade input files.
@@ -144,23 +145,9 @@ if BFM:
     # Writing 3D BFM mesh or combining individual 2D blade row meshes depending on case dimension.
     if IN['N_dim'][0] == 3:
         print("Writing 3D BFM mesh:...")
-        # Gmesh3D(M, IN)
         ICEM3D(M,IN)
-        
-        os.chdir(DIR+"\\MESHOutput")
-        # import subprocess
-        # ICEMDIR = os.environ["ICEMDIR"]
-        # subprocess.call([r'path where the batch file is stored\name of the batch file.bat'])
-        os.system("icemcfd.bat -batch ICEM_input.rpl")
-        # # Execute meangen
-# p = Popen(r"/home/gabbo/Documents/bitbucket_local/fan-stage-design/meangen", stdin=PIPE)
-# p.communicate(input='F'.encode())
-        # p = subprocess.Popen(r"C:\\Program Files\\ANSYS Inc\\v195\\icemcfd\\win64_amd\\bin\\icemcfd.bat")
-        # p.communicate(input='-batch ICEM_input.rpl'.encode())
-        # command = ["C:\\Program Files\\ANSYS Inc\\v195\\icemcfd\\win64_amd\\bin\\icemcfd.bat -batch ICEM_input.rpl"]
-        # p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-        # subprocess.Popen(["C:\\Program Files\\ANSYS Inc\\v195\\icemcfd\\win64_amd\\bin\\icemcfd.bat"],"-batch ICEM_input.rpl")
-        # print("Done!")
+        # os.chdir(DIR+"\\MESHOutput")
+        # os.system("icemcfd.bat -batch ICEM_input.rpl")
     else:
         print("Writing 2D BFM mesh...", end='     ')
         Gmesh2D(M, IN)

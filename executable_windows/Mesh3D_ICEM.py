@@ -32,7 +32,7 @@ class ICEM3D:
         # Reading mesh parameters from input file.
 
         #self.wedge = IN["WEDGE"][0]     # Importing mesh wedge angle
-        self.wedge = 30
+        self.wedge = -30
         self.n_sec = int(IN["SECTIONS_PER_DEGREE"][0]) * self.wedge     # Calculating number of tangential nodes
         self.n_point = int(IN["AXIAL_POINTS"][0])       # Importing axial node count
         self.inlet_fac = IN["INLET_FACTOR"][0]          # Importing inlet cell size factor
@@ -91,20 +91,20 @@ class ICEM3D:
         # Fix points that were overwritten by ICEM (GEOM problem is not fixable)
         self.fixPoints()
 
-        # Make the blocks
-        self.blocking()
+        # # Make the blocks
+        # self.blocking()
 
-        # Creating 3D mesh.
-        self.mesh()
+        # # Creating 3D mesh.
+        # self.mesh()
         
-        # Save mesh to ANSYS CFX input file
-        self.savemesh()
+        # # Save mesh to ANSYS CFX input file
+        # self.savemesh()
 
-        # # Applying mesh refinement along the lines in the mesh
-        # self.refineLines()
+        # # # Applying mesh refinement along the lines in the mesh
+        # # self.refineLines()
 
-        # # Saving mesh as su2 file
-        # gmsh.write(self.fileName)
+        # # # Saving mesh as su2 file
+        # # gmsh.write(self.fileName)
 
         os.system("copy ICEM_input.txt " + DIRMESH +"\\ICEM_input.rpl")
 
@@ -388,8 +388,8 @@ class ICEM3D:
         loop23 = loop23 + " }"
 
 
-        f.write("ic_move_geometry point names " + loop3 + " rotate " + str(self.wedge/3) + " rotate_axis {0 0 1} cent {0 0 0}\n")
-        f.write("ic_move_geometry point names " + loop23 + " rotate " + str(self.wedge*2/3) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+        f.write("ic_move_geometry point names " + loop3 + " rotate " + str(self.wedge/3) + " rotate_axis {1 0 0} cent {0 0 0}\n")
+        f.write("ic_move_geometry point names " + loop23 + " rotate " + str(self.wedge*2/3) + " rotate_axis {1 0 0} cent {0 0 0}\n")
         f.write("ic_geo_reset_data_structures\n")
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
@@ -462,7 +462,7 @@ class ICEM3D:
 
         line_inlet= str(self.lines_rad[-1])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_inlet + " pnt." + str(self.points_rot_axis[0]) + " {0 0 1} 0 " + str(-self.wedge) + " c 1\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_inlet + " pnt." + str(self.points_rot_axis[0]) + " {1 0 0} 0 " + str(-self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
@@ -470,7 +470,7 @@ class ICEM3D:
 
         line_outlet= str(self.lines_rad[0])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_outlet + " pnt." + str(self.points_rot_axis[0]) + " {0 0 1} 0 " + str(-self.wedge) + " c 1\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_outlet + " pnt." + str(self.points_rot_axis[0]) + " {1 0 0} 0 " + str(-self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
@@ -500,7 +500,8 @@ class ICEM3D:
         f.write("ic_set_global geo_cad 0.0002 toler\n")
         for i in range(len(self.points_hub)):
             points_count += 1
-            f.write("ic_point {} GEOM pnt." + str(points_count) + " 0,0," + str(self.coords_hub[2,i]) + "\n")
+            # f.write("ic_point {} GEOM pnt." + str(points_count) + " 0,0," + str(self.coords_hub[2,i]) + "\n")
+            f.write("ic_point {} GEOM pnt." + str(points_count) + " " + str(self.coords_hub[0,i]) + ",0,0\n")
             points_rot_axis.append(points_count)
        
         # Revolve the hub and shroud curves 
@@ -509,7 +510,7 @@ class ICEM3D:
 
         line_hub2= str(self.lines_hub2[0])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_hub2 + " pnt." + str(points_count-1) + " {0 0 1} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_hub2 + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
@@ -517,7 +518,7 @@ class ICEM3D:
         
         line_shroud2= str(self.lines_shroud2[0])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_shroud2 + " pnt." + str(points_count-1) + " {0 0 1} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_shroud2 + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
@@ -594,7 +595,7 @@ class ICEM3D:
             
         f.write("ic_set_global geo_cad 0.0002 toler\n")
         f.write("ic_geo_duplicate_set_fam_and_data surface srf." +str(i_face) + " srf." + str(i_face+1) + " {} _0\n")
-        f.write("ic_move_geometry surface names srf." + str(i_face+1) + " rotate " + str(self.wedge) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+        f.write("ic_move_geometry surface names srf." + str(i_face+1) + " rotate " + str(self.wedge) + " rotate_axis {1 0 0} cent {0 0 0}\n")
         f.write("ic_geo_reset_data_structures\n")
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
@@ -625,7 +626,9 @@ class ICEM3D:
             lines_shroud2.append(lines_count)
 
         loop = loop_hub + loop_shroud + "}"
-        f.write("ic_move_geometry curve names " + loop + " rotate " + str(self.wedge) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+
+        #Rotate lines around X-axis
+        f.write("ic_move_geometry curve names " + loop + " rotate " + str(self.wedge) + " rotate_axis {1 0 0} cent {0 0 0}\n")
         f.write("ic_geo_reset_data_structures\n")
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
@@ -635,6 +638,7 @@ class ICEM3D:
         f.write("ic_curve concat GEOM crv." + str(self.lines_count+2) + " {" + loop_shroud + "}\n")  # Recombine shroud
         lines_hub2 = [self.lines_count+1]
         lines_shroud2 = [self.lines_count+2]
+
 
 
         # Rotate the reference points for future blocking set
@@ -659,7 +663,9 @@ class ICEM3D:
             points_shroud2.append(points_count)
             
         loop = loop + " }"
-        f.write("ic_move_geometry point names " + loop + " rotate " + str(self.wedge) + " rotate_axis {0 0 1} cent {0 0 0}\n")
+
+        # Rotate points around X-axis
+        f.write("ic_move_geometry point names " + loop + " rotate " + str(self.wedge) + " rotate_axis {1 0 0} cent {0 0 0}\n")
         f.write("ic_geo_reset_data_structures\n")
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
@@ -787,62 +793,78 @@ class ICEM3D:
         points_hub = []
         points_shroud = []
 
-        # The mesh wedge is oriented symmetrically around the Z-Y plane. It therefore rotates with half the wedge angle
-        # in positive and negative direction around the Z-axis to set the periodic boundary patches.
+        # The mesh wedge is oriented symmetrically around the X-Y plane. It therefore rotates with half the wedge angle
+        # in positive and negative direction around the X-axis to set the periodic boundary patches.
         theta = 0.5*self.wedge*np.pi/180    # Converting the wedge angle to radians
 
         # Defining the inlet point at the hub section
-        Z_hub.append(x_min)
-        X_hub.append(R_LE[0, 0]*np.sin(theta))
+        # Z_hub.append(x_min)
+        # X_hub.append(R_LE[0, 0]*np.sin(theta))
+        X_hub.append(x_min)
+        Z_hub.append(R_LE[0, 0]*np.sin(theta))
         Y_hub.append(R_LE[0, 0] * np.cos(theta))
         points_hub.append(i_point)
         i_point += 1
 
         # Defining the points defining the hub shape between the inlet and outlet
         for i in range(n_rows):
-            Z_hub.append(X_LE[0, i])
-            X_hub.append(R_LE[0, i] * np.sin(theta))
+            # Z_hub.append(X_LE[0, i])
+            # X_hub.append(R_LE[0, i] * np.sin(theta))
+            X_hub.append(X_LE[0, i])
+            Z_hub.append(R_LE[0, i] * np.sin(theta))
             Y_hub.append(R_LE[0, i] * np.cos(theta))
             points_hub.append(i_point)
             i_point += 1
 
-            Z_hub.append(X_TE[0, i])
-            X_hub.append(R_TE[0, i] * np.sin(theta))
+            # Z_hub.append(X_TE[0, i])
+            # X_hub.append(R_TE[0, i] * np.sin(theta))
+            X_hub.append(X_TE[0, i])
+            Z_hub.append(R_TE[0, i] * np.sin(theta))
             Y_hub.append(R_TE[0, i] * np.cos(theta))
             points_hub.append(i_point)
             i_point += 1
 
         # Defining the outlet point at the hub section
-        Z_hub.append(x_max)
-        X_hub.append(R_TE[0, -1] * np.sin(theta))
+        # Z_hub.append(x_max)
+        # X_hub.append(R_TE[0, -1] * np.sin(theta))
+        X_hub.append(x_max)
+        Z_hub.append(R_TE[0, -1] * np.sin(theta))
         Y_hub.append(R_TE[0, -1] * np.cos(theta))
         points_hub.append(i_point)
         i_point += 1
 
         # Defining the inlet point at the shroud section
-        Z_shroud.append(x_min)
-        X_shroud.append(R_LE[-1, 0] * np.sin(theta))
+        # Z_shroud.append(x_min)
+        # X_shroud.append(R_LE[-1, 0] * np.sin(theta))
+        X_shroud.append(x_min)
+        Z_shroud.append(R_LE[-1, 0] * np.sin(theta))
         Y_shroud.append(R_LE[-1, 0] * np.cos(theta))
         points_shroud.append(i_point)
         i_point += 1
 
         # Defining the points defining the shroud shape between the inlet and outlet
         for i in range(n_rows):
-            Z_shroud.append(X_LE[-1, i])
-            X_shroud.append(R_LE[-1, i] * np.sin(theta))
+            # Z_shroud.append(X_LE[-1, i])
+            # X_shroud.append(R_LE[-1, i] * np.sin(theta))
+            X_shroud.append(X_LE[-1, i])
+            Z_shroud.append(R_LE[-1, i] * np.sin(theta))
             Y_shroud.append(R_LE[-1, i] * np.cos(theta))
             points_shroud.append(i_point)
             i_point += 1
 
-            Z_shroud.append(X_TE[-1, i])
-            X_shroud.append(R_TE[-1, i] * np.sin(theta))
+            # Z_shroud.append(X_TE[-1, i])
+            # X_shroud.append(R_TE[-1, i] * np.sin(theta))
+            X_shroud.append(X_TE[-1, i])
+            Z_shroud.append(R_TE[-1, i] * np.sin(theta))
             Y_shroud.append(R_TE[-1, i] * np.cos(theta))
             points_shroud.append(i_point)
             i_point += 1
 
         # Defining the outlet point on the shroud section
-        Z_shroud.append(x_max)
-        X_shroud.append(R_TE[-1, -1] * np.sin(theta))
+        # Z_shroud.append(x_max)
+        # X_shroud.append(R_TE[-1, -1] * np.sin(theta))
+        X_shroud.append(x_max)
+        Z_shroud.append(R_TE[-1, -1] * np.sin(theta))
         Y_shroud.append(R_TE[-1, -1] * np.cos(theta))
         points_shroud.append(i_point)
         i_point += 1
