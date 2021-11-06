@@ -47,12 +47,14 @@ class ICEM3D:
         # gmsh.initialize()
         # gmsh.option.setNumber("General.Terminal", 1)
         # self.model.add("3DBFM")
+        DIR = os.getcwd() 
+        if not os.path.isdir("MESHOutput"):
+            os.mkdir(DIR + "\\MESHOutput")
+           
+        DIRMESH = DIR + "\\MESHOutput"  
 
         # Write the initial paragraph for the replay file
         f = open("ICEM_input.txt", "w")
-
-        #set project file directory
-        #f.write("ic_chdir C:/Users/GMrx1/Desktop/ANSYS_WORKS/lecture1\n")
 
         # set the settings
         f.write("ic_set_global geo_cad 0 toptol_userset\n")
@@ -95,23 +97,16 @@ class ICEM3D:
         # Creating 3D mesh.
         self.mesh()
         
+        # Save mesh to ANSYS CFX input file
+        self.savemesh()
 
         # # Applying mesh refinement along the lines in the mesh
         # self.refineLines()
 
-        # # Generate the 3D mesh geometry
-        # gmsh.model.mesh.generate(3)
-
         # # Saving mesh as su2 file
         # gmsh.write(self.fileName)
 
-        # Transforming mesh to periodic mesh.
-        # print("Building periodic mesh...")
-        # self.makePerio()
-        # print("Done!")
-        # HOME = os.environ["M2BFM"]
-        ICEMDIR = os.environ["ICEMDIR"]
-        os.system("copy ICEM_input.txt " + ICEMDIR +"\\ICEM_input.rpl")
+        os.system("copy ICEM_input.txt " + DIRMESH +"\\ICEM_input.rpl")
 
         
 
@@ -163,6 +158,47 @@ class ICEM3D:
 
     #     # Executing SU2_PERIO to create periodic mesh and storing output in output file.
     #     os.system("SU2_PERIO createPerio.cfg > SU2_PERIO.out")
+    
+    def savemesh(self):
+        DIR = os.getcwd()
+        DIRMESH = DIR + "\\MESHOutput"
+        DIRMESH = DIRMESH.replace("\\","/")
+        # # os.chdir("\\MESHOutput")
+
+        f = open("ICEM_input.txt", "a")
+        f.write("ic_hex_write_file ./hex.uns GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3 no_boco\n")
+        f.write("ic_uns_load ./hex.uns 3 0 {} 1\n")
+        f.write("ic_uns_update_family_type visible {INLET SHROUD_WALL GEOM OUTLET ORFN HUB_WALL RIGHT_SYM SOLID LEFT_SYM} {!NODE !LINE_2 QUAD_4 !HEXA_8} update 0\n")
+        f.write("ic_boco_solver\n")
+        f.write("ic_boco_clear_icons\n")
+        f.write("ic_uns_update_family_type visible {INLET SHROUD_WALL GEOM OUTLET ORFN HUB_WALL RIGHT_SYM SOLID LEFT_SYM} {!NODE LINE_2 QUAD_4 !HEXA_8} update 0\n")
+        f.write("ic_boco_solver CGNS\n")
+        f.write("ic_solver_mesh_info CGNS\n")
+        f.write("ic_boco_solver\n")
+        f.write("ic_boco_solver CGNS\n")
+        f.write("ic_solution_set_solver CGNS 1\n")
+        f.write("ic_boco_save {" + DIRMESH +"\\ICEM_MESH.fbc}\n")
+        f.write("ic_boco_save_atr {" + DIRMESH +"\\ICEM_MESH.atr}\n")
+        f.write("ic_delete_empty_parts\n")
+        f.write("ic_save_tetin project1.tin 0 0 {} {} 0 0 1\n")
+        f.write("ic_uns_check_duplicate_numbers\n")
+        f.write("ic_save_unstruct project1.uns 1 {} {} {}\n")
+        f.write("ic_uns_set_modified 1\n")
+        f.write("ic_hex_save_blocking project1.blk\n")
+        f.write("ic_boco_solver\n")
+        f.write("ic_boco_solver CGNS\n")
+        f.write("ic_solution_set_solver CGNS 1\n")
+        f.write("ic_boco_save project1.fbc\n")
+        f.write("ic_boco_save_atr project1.atr\n")
+        f.write("ic_save_project_file "+DIRMESH+"/project1.prj {array\ set\ file_name\ \{ {    catia_dir .} {    parts_dir .} {    domain_loaded 0} {    cart_file_loaded 0} {    cart_file {}} {    domain_saved project1.uns} {    archive {}} {    med_replay {}} {    topology_dir .} {    ugparts_dir .} {    icons {{$env(ICEM_ACN)/lib/ai_env/icons} {$env(ICEM_ACN)/lib/va/EZCAD/icons} {$env(ICEM_ACN)/lib/icons} {$env(ICEM_ACN)/lib/va/CABIN/icons}}} {    tetin project1.tin} {    family_boco project1.fbc} {    iges_dir .} {    solver_params_loaded 0} {    attributes_loaded 0} {    project_lock {}} {    attributes project1.atr} {    domain project1.uns} {    domains_dir .} {    settings_loaded 0} {    settings project1.prj} {    blocking project1.blk} {    hexa_replay {}} {    transfer_dir .} {    mesh_dir .} {    family_topo {}} {    gemsparts_dir .} {    family_boco_loaded 0} {    tetin_loaded 0} {    project_dir .} {    topo_mulcad_out {}} {    solver_params {}} \} array\ set\ options\ \{ {    expert 1} {    remote_path {}} {    tree_disp_quad 2} {    tree_disp_pyra 0} {    evaluate_diagnostic 0} {    histo_show_default 1} {    select_toggle_corners 0} {    remove_all 0} {    keep_existing_file_names 0} {    record_journal 0} {    edit_wait 0} {    face_mode all} {    select_mode all} {    med_save_emergency_tetin 1} {    user_name GMrx1} {    diag_which all} {    uns_warn_if_display 500000} {    bubble_delay 1000} {    external_num 1} {    tree_disp_tri 2} {    apply_all 0} {    default_solver {ANSYS Fluent}} {    temporary_directory {}} {    flood_select_angle 0} {    home_after_load 1} {    project_active 0} {    histo_color_by_quality_default 1} {    undo_logging 1} {    tree_disp_hexa 0} {    histo_solid_default 1} {    host_name LAPTOP-1G7TMHD3} {    xhidden_full 1} {    replay_internal_editor 1} {    editor notepad} {    mouse_color orange} {    clear_undo 1} {    remote_acn {}} {    remote_sh csh} {    tree_disp_penta 0} {    n_processors 1} {    remote_host {}} {    save_to_new 0} {    quality_info Quality} {    tree_disp_node 0} {    med_save_emergency_mesh 1} {    redtext_color red} {    tree_disp_line 0} {    select_edge_mode 0} {    use_dlremote 0} {    max_mesh_map_size 1024} {    show_tris 1} {    remote_user {}} {    enable_idle 0} {    auto_save_views 1} {    max_cad_map_size 512} {    display_origin 0} {    uns_warn_user_if_display 1000000} {    detail_info 0} {    win_java_help 0} {    show_factor 1} {    boundary_mode all} {    clean_up_tmp_files 1} {    auto_fix_uncovered_faces 1} {    med_save_emergency_blocking 1} {    max_binary_tetin 0} {    tree_disp_tetra 0} \} array\ set\ disp_options\ \{ {    uns_dualmesh 0} {    uns_warn_if_display 500000} {    uns_normals_colored 0} {    uns_icons 0} {    uns_locked_elements 0} {    uns_shrink_npos 0} {    uns_node_type None} {    uns_icons_normals_vol 0} {    uns_bcfield 0} {    backup Wire} {    uns_nodes 0} {    uns_only_edges 0} {    uns_surf_bounds 0} {    uns_wide_lines 0} {    uns_vol_bounds 0} {    uns_displ_orient Triad} {    uns_orientation 0} {    uns_directions 0} {    uns_thickness 0} {    uns_shell_diagnostic 0} {    uns_normals 0} {    uns_couplings 0} {    uns_periodicity 0} {    uns_single_surfaces 0} {    uns_midside_nodes 1} {    uns_shrink 100} {    uns_multiple_surfaces 0} {    uns_no_inner 0} {    uns_enums 0} {    uns_disp Wire} {    uns_bcfield_name {}} {    uns_color_by_quality 0} {    uns_changes 0} {    uns_cut_delay_count 1000} \} {set icon_size1 24} {set icon_size2 35} {set thickness_defined 0} {set solver_type 1} {set solver_setup -1} array\ set\ prism_values\ \{ {    n_triangle_smoothing_steps 5} {    min_smoothing_steps 6} {    first_layer_smoothing_steps 1} {    new_volume {}} {    height {}} {    prism_height_limit {}} {    interpolate_heights 0} {    n_tetra_smoothing_steps 10} {    do_checks {}} {    delete_standalone 1} {    ortho_weight 0.50} {    max_aspect_ratio {}} {    ratio_max {}} {    incremental_write 0} {    total_height {}} {    use_prism_v10 0} {    intermediate_write 1} {    delete_base_triangles {}} {    ratio_multiplier {}} {    verbosity_level 1} {    refine_prism_boundary 1} {    max_size_ratio {}} {    triangle_quality {}} {    max_prism_angle 180} {    tetra_smooth_limit 0.3} {    max_jump_factor 5} {    use_existing_quad_layers 0} {    layers 3} {    fillet 0.10} {    into_orphan 0} {    init_dir_from_prev {}} {    blayer_2d 0} {    do_not_allow_sticking {}} {    top_family {}} {    law exponential} {    min_smoothing_val 0.1} {    auto_reduction 0} {    stop_columns 1} {    stair_step 1} {    smoothing_steps 12} {    side_family {}} {    min_prism_quality 0.01} {    ratio 1.2} \} {set aie_current_flavor {}} array\ set\ vid_options\ \{ {    wb_import_mat_points 0} {    wb_NS_to_subset 0} {    wb_import_surface_bodies 1} {    wb_import_cad_att_pre {SDFEA;DDM}} {    wb_import_mix_res_line 0} {    wb_import_tritol 0.001} {    auxiliary 1} {    wb_import_cad_att_trans 1} {    wb_import_mix_res -1} {    wb_import_mix_res_surface 0} {    show_name 0} {    wb_import_solid_bodies 1} {    wb_import_delete_solids 0} {    do_intersect_self_part 1} {    wb_import_mix_res_solid 0} {    wb_import_save_pmdb {}} {    inherit 0} {    default_part GEOM} {    new_srf_topo 0} {    wb_import_associativity_model_name {}} {    DelPerFlag 0} {    show_item_name 0} {    wb_import_line_bodies 0} {    wb_import_save_partfile 0} {    composite_tolerance 1.0} {    wb_NS_to_entity_parts 0} {    wb_import_en_sym_proc 1} {    wb_import_sel_proc 1} {    wb_import_work_points 0} {    wb_import_reference_key 0} {    wb_import_mix_res_point 0} {    wb_import_pluginname {}} {    wb_NS_only 0} {    wb_import_geom 0} {    wb_import_create_solids 0} {    wb_import_refresh_pmdb 0} {    wb_import_lcs 0} {    wb_import_sel_pre {}} {    wb_import_scale_geo Default} {    wb_import_load_pmdb {}} {    replace 0} {    wb_import_cad_associativity 0} {    same_pnt_tol 1e-4} {    tdv_axes 1} {    wb_import_mesh 0} {    vid_mode 0} {    DelBlkPerFlag 0} \} {set savedTreeVisibility {geomNode 1 geom_subsetNode 2 geomPointNode 0 geomCurveNode 2 geomSurfNode 2 meshNode 1 mesh_subsetNode 2 meshPointNode 0 meshLineNode 2 meshShellNode 2 meshQuadNode 2 meshVolumeNode 0 meshHexaNode 0 blockingNode 1 block_subsetNode 2 block_vertNode 0 block_edgeNode 2 block_faceNode 0 block_blockNode 0 block_meshNode 0 topoNode 2 topo-root 2 partNode 2 part-GEOM 2 part-HUB_WALL 2 part-INLET 2 part-LEFT_SYM 2 part-OUTLET 2 part-RIGHT_SYM 2 part-SHROUD_WALL 2 part-SOLID 2 part-VORFN 0}} {set last_view {rot {0.0225677294222 -0.946480402031 -0.0425933790289 -0.319141583359} scale {857.662704449 857.662704449 857.662704449} center {0 0 0} pos {173.289871722 -283.900428141 0}}} array\ set\ cut_info\ \{ {    active 0} {    whole 1} \} array\ set\ hex_option\ \{ {    default_bunching_ratio 2.0} {    floating_grid 0} {    project_to_topo 0} {    n_tetra_smoothing_steps 20} {    sketching_mode 0} {    trfDeg 1} {    wr_hexa7 0} {    smooth_ogrid 0} {    find_worst 1-3} {    hexa_verbose_mode 0} {    old_eparams 0} {    uns_face_mesh_method uniform_quad} {    multigrid_level 0} {    uns_face_mesh one_tri} {    check_blck 0} {    proj_limit 0} {    check_inv 0} {    project_bspline 0} {    hexa_update_mode 1} {    default_bunching_law BiGeometric} {    worse_criterion Quality} \} array\ set\ saved_views\ \{ {    views {}} \}} {ICEM CFD}\n")
+        f.write("ic_write_file domain_list {"+DIRMESH+"/project1.uns\n}\n")
+        f.write("ic_exec {C:/Program Files/ANSYS Inc/v195/icemcfd/win64_amd/icemcfd/output-interfaces/cgns} -b project1.fbc -dom_list domain_list -unstr -scale 1.0 ./project1.cgns\n")
+        f.write("exit\n")
+
+
+
+
+
 
 
     def mesh(self):

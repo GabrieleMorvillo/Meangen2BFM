@@ -17,6 +17,7 @@ import sys
 import os
 import time
 import shutil
+import subprocess
 
 # Getting the executables directory
 #HOME = os.environ["M2BFM"]
@@ -145,7 +146,21 @@ if BFM:
         print("Writing 3D BFM mesh:...")
         # Gmesh3D(M, IN)
         ICEM3D(M,IN)
-        print("Done!")
+        
+        os.chdir(DIR+"\\MESHOutput")
+        # import subprocess
+        # ICEMDIR = os.environ["ICEMDIR"]
+        # subprocess.call([r'path where the batch file is stored\name of the batch file.bat'])
+        os.system("icemcfd.bat -batch ICEM_input.rpl")
+        # # Execute meangen
+# p = Popen(r"/home/gabbo/Documents/bitbucket_local/fan-stage-design/meangen", stdin=PIPE)
+# p.communicate(input='F'.encode())
+        # p = subprocess.Popen(r"C:\\Program Files\\ANSYS Inc\\v195\\icemcfd\\win64_amd\\bin\\icemcfd.bat")
+        # p.communicate(input='-batch ICEM_input.rpl'.encode())
+        # command = ["C:\\Program Files\\ANSYS Inc\\v195\\icemcfd\\win64_amd\\bin\\icemcfd.bat -batch ICEM_input.rpl"]
+        # p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        # subprocess.Popen(["C:\\Program Files\\ANSYS Inc\\v195\\icemcfd\\win64_amd\\bin\\icemcfd.bat"],"-batch ICEM_input.rpl")
+        # print("Done!")
     else:
         print("Writing 2D BFM mesh...", end='     ')
         Gmesh2D(M, IN)
