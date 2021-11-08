@@ -146,8 +146,8 @@ if BFM:
     if IN['N_dim'][0] == 3:
         print("Writing 3D BFM mesh:...")
         ICEM3D(M,IN)
-        # os.chdir(DIR+"\\MESHOutput")
-        # os.system("icemcfd.bat -batch ICEM_input.rpl")
+        os.chdir(DIR+"\\MESHOutput")
+        os.system("icemcfd.bat -batch ICEM_input.rpl")
     else:
         print("Writing 2D BFM mesh...", end='     ')
         Gmesh2D(M, IN)

@@ -91,14 +91,14 @@ class ICEM3D:
         # Fix points that were overwritten by ICEM (GEOM problem is not fixable)
         self.fixPoints()
 
-        # # Make the blocks
-        # self.blocking()
+        # Make the blocks
+        self.blocking()
 
-        # # Creating 3D mesh.
-        # self.mesh()
+        # Creating 3D mesh.
+        self.mesh()
         
-        # # Save mesh to ANSYS CFX input file
-        # self.savemesh()
+        # Save mesh to ANSYS CFX input file
+        self.savemesh()
 
         # # # Applying mesh refinement along the lines in the mesh
         # # self.refineLines()
@@ -772,10 +772,12 @@ class ICEM3D:
         # Calculating number of rows.
         n_rows = len(X_LE[0, :])
 
-        # The inlet and outlet patches are placed two axial chords from the first and last blade row respectively.
+        # The inlet and outlet patches are placed two axial chords/blade span from the first and last blade row respectively.
         # The axial coordinates of the inlet and outlet are calculated here.
-        x_min = min(X_LE[:, 0] - 2*(X_TE[:, 0] - X_LE[:, 0]))
-        x_max = max(X_TE[:, -1] + 2*(X_TE[:, -1] - X_LE[:, -1]))
+        # x_min = min(X_LE[:, 0] - 2*(X_TE[:, 0] - X_LE[:, 0]))
+        # x_max = max(X_TE[:, -1] + 2*(X_TE[:, -1] - X_LE[:, -1]))
+        x_min = min(X_LE[:, 0] - 1.5*(R_LE[-1, 0] - R_LE[0, 0]))
+        x_max = max(X_TE[:, -1] + 1.5*(R_TE[-1, -1] - R_TE[0, -1]))
 
         # Each point has an identifier. This number is progressively updated with each point and stored in the
         # respective lists for the hub and shroud patches.
