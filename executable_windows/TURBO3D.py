@@ -1,11 +1,10 @@
-# import gmsh
 import numpy as np
 import os
 
 
 
-# Class capable of generating a 3D mesh suitable for axisymmetric BFM analysis in SU2.
-class ICEM3D:
+# Class capable of generating a 3D mesh of inlet/outlet ducts for turbogrid analysis in ANSYS.
+class TURBO:
     wedge =         1    # 3D wedge angle in degrees. Should be lower than 180.
     n_sec =         1    # Number of sections in tangential direction in the wedge.
     n_point =       20   # Number of points in axial direction for each blade row.
@@ -25,7 +24,7 @@ class ICEM3D:
     Rev =           None  # Revolution class.
 
 
-    def __init__(self, Meangen, IN):
+    def __init__(self, Meangen, IN, duct):
         # Storing Meangen class.
         self.M = Meangen
 
@@ -39,22 +38,17 @@ class ICEM3D:
         self.outlet_fac = IN["OUTLET_FACTOR"][0]        # Importing outlet cell size factor
         self.rot_axis = IN["Rotation_axis"]
         self.BL_thick = IN["BOUNDARY_LAYER_THICKNESS"][0]
+        self.duct=duct
 
         self.Coords = type('', (), {})()
-        # # Initiating Gmesh.
-        # self.model = gmsh.model
-        # self.factory = self.model.geo
-        # gmsh.initialize()
-        # gmsh.option.setNumber("General.Terminal", 1)
-        # self.model.add("3DBFM")
         DIR = os.getcwd() 
-        if not os.path.isdir("MESHOutput\\STAGE_BFM"):
-            os.mkdir(DIR + "\\MESHOutput\\STAGE_BFM")
+        if not os.path.isdir("MESHOutput\\TURBO_"+duct):
+            os.mkdir(DIR + "\\MESHOutput\\TURBO_"+duct)
            
-        DIRMESH = DIR + "\\MESHOutput\\STAGE_BFM"  
+        DIRMESH = DIR + "\\MESHOutput\\TURBO_"+duct  
 
         # Write the initial paragraph for the replay file
-        f = open("ICEM_input.txt", "w")
+        f = open("TURBO_"+duct+".txt", "w")
 
         # set the settings
         f.write("ic_set_global geo_cad 0 toptol_userset\n")
@@ -101,71 +95,21 @@ class ICEM3D:
         self.savemesh()
 
 
-        os.system("copy ICEM_input.txt " + DIRMESH +"\\ICEM_input.rpl")
-        os.remove("ICEM_input.txt")
+        os.system("copy TURBO_"+self.duct+".txt " + DIRMESH +"\\TURBO_"+self.duct+".rpl")
+        os.remove("TURBO_"+self.duct+".txt")
 
         os.chdir(DIRMESH)
-        os.system("icemcfd.bat -batch ICEM_input.rpl")
+        os.system("icemcfd.bat -batch TURBO_"+self.duct+".rpl")
         os.chdir(DIR)
 
         
 
-    #     # In case of selection of mesh visualization option, the gmesh GUI will display the 3D BFM mesh.
-    #     if IN["PLOT_MESH"] == 'YES':
-    #         self.plotmesh()
-    #     gmsh.finalize()
-
-    # def plotmesh(self):
-    #     # This function plots the mesh in the GMesh GUI. It highlights the mesh boundaries and gives them a distinct
-    #     # color.
-
-    #     # Allow for addition of text comments in the GMesh GUI
-    #     v = gmsh.view.add("comments")
-
-    #     # Calculating the average coordinates of the mesh boundaries. This puts the boundary tag in the middle of the
-    #     # boundary patch.
-    #     inlet_coords = np.sum(self.Coords.Coords_inlet, axis=0)/np.shape(self.Coords.Coords_inlet)[0]
-    #     outlet_coords = np.sum(self.Coords.Coords_outlet, axis=0) / np.shape(self.Coords.Coords_outlet)[0]
-    #     hub_coords = np.sum(self.Coords.Coords_hub, axis=0) / np.shape(self.Coords.Coords_hub)[0]
-    #     shroud_coords = np.sum(self.Coords.Coords_shroud, axis=0) / np.shape(self.Coords.Coords_shroud)[0]
-    #     perio_1_coords = np.sum(self.Coords.Coords_periodic_1, axis=0) / np.shape(self.Coords.Coords_periodic_1)[0]
-    #     perio_2_coords = np.sum(self.Coords.Coords_periodic_2, axis=0) / np.shape(self.Coords.Coords_periodic_2)[0]
-
-    #     # Adding the boundary patch tags to each of the boundary patches.
-    #     gmsh.view.addListDataString(v, [i for i in inlet_coords], ["inlet"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in outlet_coords], ["outlet"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in hub_coords], ["hub"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in shroud_coords], ["shroud"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in perio_2_coords], ["periodic_2"],
-    #                                 ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in perio_1_coords], ["periodic_1"], ["Align", "Center", "Font", "Helvetica"])
-
-    #     # Running the GMesh GUI
-    #     gmsh.fltk.run()
-
-    # def makePerio(self):
-    #     # This function modifies the mesh to be periodic through SU2_PERIO.
-    #     # Creating SU2_PERIO configuration file.
-    #     file = open("createPerio.cfg", "w+")
-
-    #     # Writing periodic boundary command and specifying wedge angle.
-    #     file.write("MARKER_PERIODIC= (periodic_1, periodic_2, 0.0, 0.0, 0.0, 0.0, 0.0, " + str(
-    #         float(self.wedge)) + ", 0.0, 0.0, 0.0)\n")
-    #     file.write("MESH_FILENAME= "+self.fileName+"\n")
-    #     file.write("MESH_FORMAT= SU2\n")
-    #     file.write("MESH_OUT_FILENAME= "+self.fileName[:-4]+"_perio.su2\n")
-    #     file.close()
-
-    #     # Executing SU2_PERIO to create periodic mesh and storing output in output file.
-    #     os.system("SU2_PERIO createPerio.cfg > SU2_PERIO.out")
-    
     def savemesh(self):
         DIR = os.getcwd()
-        DIRMESH = DIR + "\\MESHOutput\\STAGE_BFM"
+        DIRMESH = DIR + "\\MESHOutput\\TURBO_"+self.duct
         DIRMESH = DIRMESH.replace("\\","/")
         # # os.chdir("\\MESHOutput")
-
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
         f.write("ic_hex_write_file ./hex.uns GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3 no_boco\n")
         f.write("ic_uns_load ./hex.uns 3 0 {} 1\n")
         f.write("ic_uns_update_family_type visible {INLET SHROUD_WALL GEOM OUTLET ORFN HUB_WALL RIGHT_SYM SOLID LEFT_SYM} {!NODE !LINE_2 QUAD_4 !HEXA_8} update 0\n")
@@ -194,6 +138,7 @@ class ICEM3D:
         f.write("ic_write_file domain_list {"+DIRMESH+"/project1.uns\n}\n")
         f.write("ic_exec {C:/Program Files/ANSYS Inc/v195/icemcfd/win64_amd/icemcfd/output-interfaces/cgns} -b project1.fbc -dom_list domain_list -unstr -scale 1.0 ./project1.cgns\n")
         f.write("exit\n")
+        f.close()
 
 
 
@@ -202,18 +147,17 @@ class ICEM3D:
 
 
     def mesh(self):
-         f = open("ICEM_input.txt", "a")
+         f = open("TURBO_"+self.duct+".txt", "a")
 
          # Seed the edges in axial direction
-         f.write("ic_hex_set_mesh 37 70 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 70 86 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[1])+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 86 102 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[2])+" h2rel "+str(self.BL_thick/self.length_hub[2])+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 102 118 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 118 38 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[4])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
+         if self.duct=="inlet_duct":
+             f.write("ic_hex_set_mesh 21 37 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+         if self.duct == "outlet_duct":
+             f.write("ic_hex_set_mesh 21 37 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[0])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
         
          # Seed the edges in radial direction
          n_radial = round(self.n_point*self.length_rad[0]/self.length_hub[0])
-         f.write("ic_hex_set_mesh 37 41 n "+str(n_radial)+" h1rel "+str(0.01)+" h2rel "+str(0.01)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+         f.write("ic_hex_set_mesh 21 25 n "+str(n_radial)+" h1rel "+str(0.01)+" h2rel "+str(0.01)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
 
 
          f.write("ic_hex_create_mesh GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3\n")
@@ -226,7 +170,7 @@ class ICEM3D:
 
     def blocking(self):
 
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
 
          # # Create the initial big block
         f.write("ic_geo_new_family SOLID\n")
@@ -257,17 +201,17 @@ class ICEM3D:
         f.write("ic_hex_set_n_tetra_smoothing_steps 20\n")
         f.write("ic_hex_error_messages off_minor\n")
 
-        # Split block
-        f.write("ic_hex_split_grid 41 42 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 74 42 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 90 42 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        # # Split block
+        # f.write("ic_hex_split_grid 41 42 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        # f.write("ic_hex_split_grid 74 42 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        # f.write("ic_hex_split_grid 90 42 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        # f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
   
         # Assign nodes to vertices
-        nodes_hub = [37,70,86,102,118,38]
-        nodes_shroud = [41,74,90,106,122,42]
-        nodes_hub2 = [21,69,85,101,117,22]
-        nodes_shroud2 = [25,73,89,105,121,26] 
+        nodes_hub = [21,37]
+        nodes_shroud = [25,41]
+        nodes_hub2 = [22,38]
+        nodes_shroud2 = [26,42] 
         for i in range(len(self.points_hub)):
             f.write("ic_hex_move_node "+str(nodes_hub[i])+" pnt." +str(self.points_hub[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_shroud[i])+" pnt." +str(self.points_shroud[i])+"\n")
@@ -281,7 +225,7 @@ class ICEM3D:
         
        
         # O-Grid split
-        blocks = [13,27,28,29,30]
+        blocks = [13]
         for i in blocks:
             f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
         loop =""
@@ -294,10 +238,10 @@ class ICEM3D:
         f.write("ic_hex_mark_blocks unmark\n")
         
         # Assign splitted nodes to vertices
-        nodes_hub3 = [153,154,155,156,157,158]
-        nodes_shroud3 = [161,162,163,164,165,166]
-        nodes_hub23 = [129,130,131,132,133,134]
-        nodes_shroud23 = [137,138,139,140,141,142]
+        nodes_hub3 = [70,76]
+        nodes_shroud3 = [72,78]
+        nodes_hub23 = [71,77]
+        nodes_shroud23 = [73,79]
         for i in range(len(self.points_hub)):
             f.write("ic_hex_move_node "+str(nodes_hub3[i])+" pnt." +str(self.points_lines_wall_hub3[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_shroud3[i])+" pnt." +str(self.points_lines_wall_shroud3[i])+"\n")
@@ -315,7 +259,7 @@ class ICEM3D:
             f.write("ic_hex_set_edge_projection "+str(nodes_shroud23[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
         
         # Remove bottom blocks that are not needed
-        low_blocks=[36,39,42,45,48]
+        low_blocks=[32]
         for i in low_blocks:
             f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
             f.write("ic_hex_change_element_id VORFN\n")
@@ -328,7 +272,7 @@ class ICEM3D:
 
 
     def fixPoints(self):
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
         
         # Delete the reference points of the rotation axis
         for i in self.points_rot_axis:
@@ -421,7 +365,7 @@ class ICEM3D:
     def nameBoundaries(self):
         # This function gives names to all the boundaries of the 3D mesh so boundary conditions can be assigned in the
         # SU2 configuration file.
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
 
         # Create left and right symmetric surfaces
         f.write("ic_geo_set_part surface srf." +str(self.faces_simmetry[0])+ " RIGHT_SYM 0\n")
@@ -458,7 +402,7 @@ class ICEM3D:
         inlet = []
         outlet = []
         i_surf = self.surfaces_count
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
 
         line_inlet= str(self.lines_rad[-1])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
@@ -496,7 +440,7 @@ class ICEM3D:
         points_rot_axis = []
         points_count =self.points_count
 
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
         f.write("ic_set_global geo_cad 0.0002 toler\n")
         for i in range(len(self.points_hub)):
             points_count += 1
@@ -583,7 +527,7 @@ class ICEM3D:
         loop = loop + "}"
 
         # Create surface from n lines with 0.01 tolerance
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
         f.write("ic_set_global geo_cad 0 toptol_userset\n")
         f.write("ic_set_global geo_cad 0.0002 toler\n")
         f.write("ic_surface bsinterp GEOM srf." + str(i_face) +" " + loop + "\n")
@@ -632,12 +576,12 @@ class ICEM3D:
         f.write("ic_geo_reset_data_structures\n")
         f.write("ic_geo_configure_one_attribute surface shade wire\n")
 
-        # Recombine lines
-        f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_curve concat GEOM crv." + str(self.lines_count+1) + " " + loop_hub + "}\n")  # Recombine hub
-        f.write("ic_curve concat GEOM crv." + str(self.lines_count+2) + " {" + loop_shroud + "}\n")  # Recombine shroud
-        lines_hub2 = [self.lines_count+1]
-        lines_shroud2 = [self.lines_count+2]
+        # # Recombine lines
+        # f.write("ic_set_global geo_cad 0.0006 toler\n")
+        # f.write("ic_curve concat GEOM crv." + str(self.lines_count+1) + " " + loop_hub + "}\n")  # Recombine hub
+        # f.write("ic_curve concat GEOM crv." + str(self.lines_count+2) + " {" + loop_shroud + "}\n")  # Recombine shroud
+        # lines_hub2 = [self.lines_count+1]
+        # lines_shroud2 = [self.lines_count+2]
 
 
 
@@ -707,7 +651,7 @@ class ICEM3D:
         length_rad = []
         i_line = 1
         # i_point = 1
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
 
         # Looping through the hub and shroud points to build lines defining the hub and shroud shape.
         for i in range(len(self.points_hub)-1):
@@ -772,10 +716,8 @@ class ICEM3D:
         # Calculating number of rows.
         n_rows = len(X_LE[0, :])
 
-        # The inlet and outlet patches are placed two axial chords/blade span from the first and last blade row respectively.
+        # The inlet and outlet patches are placed 1.5 axial chords/blade span from the first and last blade row respectively.
         # The axial coordinates of the inlet and outlet are calculated here.
-        # x_min = min(X_LE[:, 0] - 2*(X_TE[:, 0] - X_LE[:, 0]))
-        # x_max = max(X_TE[:, -1] + 2*(X_TE[:, -1] - X_LE[:, -1]))
         x_min = min(X_LE[:, 0] - 1.5*(R_LE[-1, 0] - R_LE[0, 0]))
         x_max = max(X_TE[:, -1] + 1.5*(R_TE[-1, -1] - R_TE[0, -1]))
 
@@ -799,93 +741,67 @@ class ICEM3D:
         # in positive and negative direction around the X-axis to set the periodic boundary patches.
         theta = 0.5*self.wedge*np.pi/180    # Converting the wedge angle to radians
 
-        # Defining the inlet point at the hub section
-        # Z_hub.append(x_min)
-        # X_hub.append(R_LE[0, 0]*np.sin(theta))
-        X_hub.append(x_min)
-        Z_hub.append(R_LE[0, 0]*np.sin(theta))
-        Y_hub.append(R_LE[0, 0] * np.cos(theta))
-        points_hub.append(i_point)
-        i_point += 1
-
-        # Defining the points defining the hub shape between the inlet and outlet
-        for i in range(n_rows):
-            # Z_hub.append(X_LE[0, i])
-            # X_hub.append(R_LE[0, i] * np.sin(theta))
-            X_hub.append(X_LE[0, i])
-            Z_hub.append(R_LE[0, i] * np.sin(theta))
-            Y_hub.append(R_LE[0, i] * np.cos(theta))
+        if self.duct == "inlet_duct":
+            # Defining the inlet point at the hub inlet section
+            X_hub.append(x_min)
+            Z_hub.append(R_LE[0, 0]*np.sin(theta))
+            Y_hub.append(R_LE[0, 0] * np.cos(theta))
             points_hub.append(i_point)
             i_point += 1
 
-            # Z_hub.append(X_TE[0, i])
-            # X_hub.append(R_TE[0, i] * np.sin(theta))
-            X_hub.append(X_TE[0, i])
-            Z_hub.append(R_TE[0, i] * np.sin(theta))
-            Y_hub.append(R_TE[0, i] * np.cos(theta))
+            # Defining the points at hub blade LE
+            X_hub.append(X_LE[0, 0])
+            Z_hub.append(R_LE[0, 0] * np.sin(theta))
+            Y_hub.append(R_LE[0, 0] * np.cos(theta))
             points_hub.append(i_point)
             i_point += 1
 
-        # Defining the outlet point at the hub section
-        # Z_hub.append(x_max)
-        # X_hub.append(R_TE[0, -1] * np.sin(theta))
-        X_hub.append(x_max)
-        Z_hub.append(R_TE[0, -1] * np.sin(theta))
-        Y_hub.append(R_TE[0, -1] * np.cos(theta))
-        points_hub.append(i_point)
-        i_point += 1
-
-        # Defining the inlet point at the shroud section
-        # Z_shroud.append(x_min)
-        # X_shroud.append(R_LE[-1, 0] * np.sin(theta))
-        X_shroud.append(x_min)
-        Z_shroud.append(R_LE[-1, 0] * np.sin(theta))
-        Y_shroud.append(R_LE[-1, 0] * np.cos(theta))
-        points_shroud.append(i_point)
-        i_point += 1
-
-        # Defining the points defining the shroud shape between the inlet and outlet
-        for i in range(n_rows):
-            # Z_shroud.append(X_LE[-1, i])
-            # X_shroud.append(R_LE[-1, i] * np.sin(theta))
-            X_shroud.append(X_LE[-1, i])
-            Z_shroud.append(R_LE[-1, i] * np.sin(theta))
-            Y_shroud.append(R_LE[-1, i] * np.cos(theta))
+             # Defining the inlet point at the shroud inlet section
+            X_shroud.append(x_min)
+            Z_shroud.append(R_LE[-1, 0] * np.sin(theta))
+            Y_shroud.append(R_LE[-1, 0] * np.cos(theta))
             points_shroud.append(i_point)
             i_point += 1
 
-            # Z_shroud.append(X_TE[-1, i])
-            # X_shroud.append(R_TE[-1, i] * np.sin(theta))
-            X_shroud.append(X_TE[-1, i])
-            Z_shroud.append(R_TE[-1, i] * np.sin(theta))
-            Y_shroud.append(R_TE[-1, i] * np.cos(theta))
+            # Defining the points at shroud blade LE
+            X_shroud.append(X_LE[-1, 0])
+            Z_shroud.append(R_LE[-1, 0] * np.sin(theta))
+            Y_shroud.append(R_LE[-1, 0] * np.cos(theta))
             points_shroud.append(i_point)
             i_point += 1
 
-        # Defining the outlet point on the shroud section
-        # Z_shroud.append(x_max)
-        # X_shroud.append(R_TE[-1, -1] * np.sin(theta))
-        X_shroud.append(x_max)
-        Z_shroud.append(R_TE[-1, -1] * np.sin(theta))
-        Y_shroud.append(R_TE[-1, -1] * np.cos(theta))
-        points_shroud.append(i_point)
-        i_point += 1
 
-        # Storing the boundary patch coordinates in the class
-        self.Coords.Coords_inlet = np.array([[X_hub[0], Y_hub[0], Z_hub[0]],
-                                           [X_shroud[0], Y_shroud[0], Z_shroud[0]],
-                                           [-X_hub[0], Y_hub[0], Z_hub[0]],
-                                           [-X_shroud[0], Y_shroud[0], Z_shroud[0]]])
-        self.Coords.Coords_outlet = np.array([[X_hub[-1], Y_hub[-1], Z_hub[-1]],
-                                           [X_shroud[-1], Y_shroud[-1], Z_shroud[-1]],
-                                           [-X_hub[-1], Y_hub[-1], Z_hub[-1]],
-                                           [-X_shroud[-1], Y_shroud[-1], Z_shroud[-1]]])
-        self.Coords.Coords_hub = np.transpose(np.array([X_hub + [-x for x in X_hub], Y_hub + Y_hub, Z_hub + Z_hub]))
-        self.Coords.Coords_shroud = np.transpose(np.array([X_shroud + [-x for x in X_shroud], Y_shroud + Y_shroud, Z_shroud + Z_shroud]))
-        self.Coords.Coords_periodic_1 = np.transpose(np.array([X_hub + X_shroud, Y_hub + Y_shroud, Z_hub + Z_shroud]))
-        self.Coords.Coords_periodic_2 = np.transpose(np.array([[-x for x in X_hub] + [-x for x in X_shroud],
-                                                               [x for x in Y_hub] + [x for x in Y_shroud],
-                                                               [x for x in Z_hub] + [x for x in Z_shroud]]))
+ 
+        if self.duct == "outlet_duct":
+            
+            # Defining the outlet point at the blade hub TE
+            X_hub.append(X_TE[0, n_rows-1])
+            Z_hub.append(R_TE[0, n_rows-1] * np.sin(theta))
+            Y_hub.append(R_TE[0, n_rows-1] * np.cos(theta))
+            points_hub.append(i_point)
+            i_point += 1
+
+            # Defining the outlet point at the hub outlet section
+            X_hub.append(x_max)
+            Z_hub.append(R_TE[0, -1] * np.sin(theta))
+            Y_hub.append(R_TE[0, -1] * np.cos(theta))
+            points_hub.append(i_point)
+            i_point += 1
+
+            # Defining the outlet point at the blade shroud TE
+            X_shroud.append(X_TE[-1, n_rows-1])
+            Z_shroud.append(R_TE[-1, n_rows-1] * np.sin(theta))
+            Y_shroud.append(R_TE[-1, n_rows-1] * np.cos(theta))
+            points_shroud.append(i_point)
+            i_point += 1
+
+            # Defining the outlet point on the shroud outlet section
+            X_shroud.append(x_max)
+            Z_shroud.append(R_TE[-1, -1] * np.sin(theta))
+            Y_shroud.append(R_TE[-1, -1] * np.cos(theta))
+            points_shroud.append(i_point)
+            i_point += 1
+
 
         # Storing the hub and shroud point identifier lists
         self.points_hub = points_hub
@@ -896,7 +812,7 @@ class ICEM3D:
 
 
         # Writing the hub and shroud points in ICEM .rep file
-        f = open("ICEM_input.txt", "a")
+        f = open("TURBO_"+self.duct+".txt", "a")
 
         f.write("ic_geo_new_family GEOM\n")
         f.write("ic_boco_set_part_color GEOM\n")

@@ -19,6 +19,8 @@ import time
 import shutil
 import subprocess
 
+# from executable_windows.TURBO3D import TURBO
+
 # Getting the executables directory
 #HOME = os.environ["M2BFM"]
 HOME = os.getenv('M2BFM')
@@ -30,6 +32,7 @@ from Parablade2UMG2 import WriteUMG, writeStageMesh_BFM, writeStageMesh_Blade
 from SU2Writer import writeBFMinput, ReadUserInput, writeSU2input
 from Mesh3D import Gmesh3D, Gmesh2D, FullAnnulus
 from Mesh3D_ICEM import ICEM3D
+from TURBO3D import TURBO
 from dataPlotter import axial_data_plotter
 # from ParaviewPost import AxialMachine
 
@@ -138,16 +141,18 @@ for i in range(n_stage):
 
 if BFM:
     # Writing BFM input file suitable for SU2 BFM analysis.
-    print("Writing Body-force SU2 input file...", end='     ')
-    writeBFMinput(M)
-    print("Done!")
+    # print("Writing Body-force SU2 input file...", end='     ')
+    # writeBFMinput(M)
+    # print("Done!")
 
     # Writing 3D BFM mesh or combining individual 2D blade row meshes depending on case dimension.
     if IN['N_dim'][0] == 3:
         print("Writing 3D BFM mesh:...")
         ICEM3D(M,IN)
-        os.chdir(DIR+"\\MESHOutput")
-        os.system("icemcfd.bat -batch ICEM_input.rpl")
+        TURBO(M,IN,"inlet_duct")
+        TURBO(M,IN,"outlet_duct")
+        # os.chdir(DIR+"\\MESHOutput")
+        # os.system("icemcfd.bat -batch ICEM_input.rpl")
     else:
         print("Writing 2D BFM mesh...", end='     ')
         Gmesh2D(M, IN)
