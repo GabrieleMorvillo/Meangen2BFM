@@ -31,7 +31,7 @@ class TURBO:
         # Reading mesh parameters from input file.
 
         #self.wedge = IN["WEDGE"][0]     # Importing mesh wedge angle
-        self.wedge = -30
+        self.wedge = -1
         self.n_sec = int(IN["SECTIONS_PER_DEGREE"][0]) * self.wedge     # Calculating number of tangential nodes
         self.n_point = int(IN["AXIAL_POINTS"][0])       # Importing axial node count
         self.inlet_fac = IN["INLET_FACTOR"][0]          # Importing inlet cell size factor

@@ -5,7 +5,7 @@ import os
 
 
 # Class capable of generating a 3D mesh suitable for axisymmetric BFM analysis in SU2.
-class ICEM3D:
+class ICEM3D_sphere:
     wedge =         1    # 3D wedge angle in degrees. Should be lower than 180.
     n_sec =         1    # Number of sections in tangential direction in the wedge.
     n_point =       20   # Number of points in axial direction for each blade row.
@@ -80,20 +80,20 @@ class ICEM3D:
         # Making lateral periodic faces.
         self.makeSymFaces()
 
-        # Revolving hub and shroud around rotation axis to create walls.
+        # # Revolving hub and shroud around rotation axis to create walls.
         self.makeWalls()
 
-        # Revolving radial lines around rotation axis to create inlet and outlet.
+        # # Revolving radial lines around rotation axis to create inlet and outlet.
         self.makeInOut()
 
-        # # Setting names to boundaries.
-        # self.nameBoundaries()
+        # Setting names to boundaries.
+        self.nameBoundaries()
 
-        # # Fix points that were overwritten by ICEM (GEOM problem is not fixable)
-        # self.fixPoints()
+        # Fix points that were overwritten by ICEM (GEOM problem is not fixable)
+        self.fixPoints()
 
-        # # Make the blocks
-        # self.blocking()
+        # Make the blocks
+        self.blocking()
 
         # # Creating 3D mesh.
         # self.mesh()
@@ -105,61 +105,11 @@ class ICEM3D:
         os.system("copy ICEM_input.txt " + DIRMESH +"\\ICEM_input.rpl")
         os.remove("ICEM_input.txt")
 
-        os.chdir(DIRMESH)
-        os.system("icemcfd.bat -batch ICEM_input.rpl")
-        os.chdir(DIR)
+        # os.chdir(DIRMESH)
+        # os.system("icemcfd.bat -batch ICEM_input.rpl")
+        # os.chdir(DIR)
 
-        
 
-    #     # In case of selection of mesh visualization option, the gmesh GUI will display the 3D BFM mesh.
-    #     if IN["PLOT_MESH"] == 'YES':
-    #         self.plotmesh()
-    #     gmsh.finalize()
-
-    # def plotmesh(self):
-    #     # This function plots the mesh in the GMesh GUI. It highlights the mesh boundaries and gives them a distinct
-    #     # color.
-
-    #     # Allow for addition of text comments in the GMesh GUI
-    #     v = gmsh.view.add("comments")
-
-    #     # Calculating the average coordinates of the mesh boundaries. This puts the boundary tag in the middle of the
-    #     # boundary patch.
-    #     inlet_coords = np.sum(self.Coords.Coords_inlet, axis=0)/np.shape(self.Coords.Coords_inlet)[0]
-    #     outlet_coords = np.sum(self.Coords.Coords_outlet, axis=0) / np.shape(self.Coords.Coords_outlet)[0]
-    #     hub_coords = np.sum(self.Coords.Coords_hub, axis=0) / np.shape(self.Coords.Coords_hub)[0]
-    #     shroud_coords = np.sum(self.Coords.Coords_shroud, axis=0) / np.shape(self.Coords.Coords_shroud)[0]
-    #     perio_1_coords = np.sum(self.Coords.Coords_periodic_1, axis=0) / np.shape(self.Coords.Coords_periodic_1)[0]
-    #     perio_2_coords = np.sum(self.Coords.Coords_periodic_2, axis=0) / np.shape(self.Coords.Coords_periodic_2)[0]
-
-    #     # Adding the boundary patch tags to each of the boundary patches.
-    #     gmsh.view.addListDataString(v, [i for i in inlet_coords], ["inlet"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in outlet_coords], ["outlet"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in hub_coords], ["hub"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in shroud_coords], ["shroud"], ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in perio_2_coords], ["periodic_2"],
-    #                                 ["Align", "Center", "Font", "Helvetica"])
-    #     gmsh.view.addListDataString(v, [i for i in perio_1_coords], ["periodic_1"], ["Align", "Center", "Font", "Helvetica"])
-
-    #     # Running the GMesh GUI
-    #     gmsh.fltk.run()
-
-    # def makePerio(self):
-    #     # This function modifies the mesh to be periodic through SU2_PERIO.
-    #     # Creating SU2_PERIO configuration file.
-    #     file = open("createPerio.cfg", "w+")
-
-    #     # Writing periodic boundary command and specifying wedge angle.
-    #     file.write("MARKER_PERIODIC= (periodic_1, periodic_2, 0.0, 0.0, 0.0, 0.0, 0.0, " + str(
-    #         float(self.wedge)) + ", 0.0, 0.0, 0.0)\n")
-    #     file.write("MESH_FILENAME= "+self.fileName+"\n")
-    #     file.write("MESH_FORMAT= SU2\n")
-    #     file.write("MESH_OUT_FILENAME= "+self.fileName[:-4]+"_perio.su2\n")
-    #     file.close()
-
-    #     # Executing SU2_PERIO to create periodic mesh and storing output in output file.
-    #     os.system("SU2_PERIO createPerio.cfg > SU2_PERIO.out")
-    
     def savemesh(self):
         DIR = os.getcwd()
         DIRMESH = DIR + "\\MESHOutput\\STAGE_BFM"
@@ -259,16 +209,32 @@ class ICEM3D:
         f.write("ic_hex_error_messages off_minor\n")
 
         # Split block
-        f.write("ic_hex_split_grid 41 42 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 74 42 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 90 42 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_move_node 22 pnt." +str(self.points_hub[0])+"\n")
+        f.write("ic_hex_move_node 38 pnt." +str(self.points_hub[-1])+"\n")
+        f.write("ic_hex_move_node 26 pnt." +str(self.points_shroud[0])+"\n")
+        f.write("ic_hex_move_node 42 pnt." +str(self.points_shroud[-1])+"\n")
+        f.write("ic_hex_move_node 21 pnt." +str(self.points_hub2[0])+"\n")
+        f.write("ic_hex_move_node 37 pnt." +str(self.points_hub2[-1])+"\n")
+        f.write("ic_hex_move_node 25 pnt." +str(self.points_shroud2[0])+"\n")
+        f.write("ic_hex_move_node 41 pnt." +str(self.points_shroud2[-1])+"\n")
+
+        # self.coords_shroud[0,1]/(self.coords_shroud[0,-1]-self.coords_shroud[0,1])
+
+
+        # f.write("ic_hex_split_grid 26 42 "+str(abs((self.coords_shroud[0,1]-self.coords_shroud[0,0])/(self.coords_shroud[0,-1]-self.coords_shroud[0,0])))+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 26 42 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        
+        f.write("ic_hex_split_grid 74 42 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 90 42 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 122 42 pnt."+str(self.points_shroud[5])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        # f.write("ic_hex_split_grid 122 42 pnt."+str(self.points_shroud[5])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
   
         # Assign nodes to vertices
-        nodes_hub = [37,70,86,102,118,38]
-        nodes_shroud = [41,74,90,106,122,42]
-        nodes_hub2 = [21,69,85,101,117,22]
-        nodes_shroud2 = [25,73,89,105,121,26] 
+        nodes_hub = [22,73,89,105,121,137,38]
+        nodes_shroud = [26,74,90,106,122,138,42]
+        nodes_hub2 = [21,69,85,101,117,133,37]
+        nodes_shroud2 = [25,70,86,102,118,134,41] 
         for i in range(len(self.points_hub)):
             f.write("ic_hex_move_node "+str(nodes_hub[i])+" pnt." +str(self.points_hub[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_shroud[i])+" pnt." +str(self.points_shroud[i])+"\n")
@@ -278,50 +244,53 @@ class ICEM3D:
         # Assign edges to curves
         for i in range(len(self.points_hub)):
             f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
+        for i in range(len(self.points_hub)):
             f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
+        f.write("ic_hex_set_edge_projection 73 89 0 1 crv.2\n")
+        f.write("ic_hex_set_edge_projection 69 85 0 1 crv.20\n")
         
        
         # O-Grid split
-        blocks = [13,27,28,29,30]
+        blocks = [13,27,28,29,30,31]
         for i in blocks:
             f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
         loop =""
         for i in range(len(nodes_hub)):
-            loop =loop+"{"+str(nodes_hub2[i])+" "+str(nodes_hub[i])+" "+str(nodes_shroud2[i])+" "+str(nodes_shroud[i])+"} "
+            loop =loop+"{"+str(nodes_hub2[i])+" "+str(nodes_hub[i])+" "+str(nodes_shroud[i])+" "+str(nodes_shroud2[i])+"} "
         for i in range(len(nodes_shroud)-1):
             loop =loop+"{"+str(nodes_shroud2[i])+" "+str(nodes_shroud2[i+1])+" "+str(nodes_shroud[i])+" "+str(nodes_shroud[i+1])+"} "
         f.write("ic_hex_mark_blocks face_neighbors corners "+loop+"\n")
-        f.write("ic_hex_ogrid 1 m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
+        f.write("ic_hex_ogrid 1 m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
         f.write("ic_hex_mark_blocks unmark\n")
         
-        # Assign splitted nodes to vertices
-        nodes_hub3 = [153,154,155,156,157,158]
-        nodes_shroud3 = [161,162,163,164,165,166]
-        nodes_hub23 = [129,130,131,132,133,134]
-        nodes_shroud23 = [137,138,139,140,141,142]
-        for i in range(len(self.points_hub)):
-            f.write("ic_hex_move_node "+str(nodes_hub3[i])+" pnt." +str(self.points_lines_wall_hub3[i])+"\n")
-            f.write("ic_hex_move_node "+str(nodes_shroud3[i])+" pnt." +str(self.points_lines_wall_shroud3[i])+"\n")
-            f.write("ic_hex_move_node "+str(nodes_hub23[i])+" pnt." +str(self.points_lines_wall_hub23[i])+"\n")
-            f.write("ic_hex_move_node "+str(nodes_shroud23[i])+" pnt." +str(self.points_lines_wall_shroud23[i])+"\n")
+        # # Assign splitted nodes to vertices
+        # nodes_hub3 = [153,154,155,156,157,158]
+        # nodes_shroud3 = [161,162,163,164,165,166]
+        # nodes_hub23 = [129,130,131,132,133,134]
+        # nodes_shroud23 = [137,138,139,140,141,142]
+        # for i in range(len(self.points_hub)):
+        #     f.write("ic_hex_move_node "+str(nodes_hub3[i])+" pnt." +str(self.points_lines_wall_hub3[i])+"\n")
+        #     f.write("ic_hex_move_node "+str(nodes_shroud3[i])+" pnt." +str(self.points_lines_wall_shroud3[i])+"\n")
+        #     f.write("ic_hex_move_node "+str(nodes_hub23[i])+" pnt." +str(self.points_lines_wall_hub23[i])+"\n")
+        #     f.write("ic_hex_move_node "+str(nodes_shroud23[i])+" pnt." +str(self.points_lines_wall_shroud23[i])+"\n")
 
-         # Assign edges to curves
-        for i in range(len(self.points_hub)):
-            f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub3[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
-            f.write("ic_hex_set_edge_projection "+str(nodes_hub3[i])+" "+str(nodes_hub23[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
-            f.write("ic_hex_set_edge_projection "+str(nodes_hub23[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
+        #  # Assign edges to curves
+        # for i in range(len(self.points_hub)):
+        #     f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub3[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
+        #     f.write("ic_hex_set_edge_projection "+str(nodes_hub3[i])+" "+str(nodes_hub23[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
+        #     f.write("ic_hex_set_edge_projection "+str(nodes_hub23[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
             
-            f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud3[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
-            f.write("ic_hex_set_edge_projection "+str(nodes_shroud3[i])+" "+str(nodes_shroud23[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
-            f.write("ic_hex_set_edge_projection "+str(nodes_shroud23[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
+        #     f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud3[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
+        #     f.write("ic_hex_set_edge_projection "+str(nodes_shroud3[i])+" "+str(nodes_shroud23[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
+        #     f.write("ic_hex_set_edge_projection "+str(nodes_shroud23[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
         
-        # Remove bottom blocks that are not needed
-        low_blocks=[36,39,42,45,48]
-        for i in low_blocks:
-            f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
-            f.write("ic_hex_change_element_id VORFN\n")
+        # # Remove bottom blocks that are not needed
+        # low_blocks=[36,39,42,45,48]
+        # for i in low_blocks:
+        #     f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
+        #     f.write("ic_hex_change_element_id VORFN\n")
         
-        f.close()
+        # f.close()
 
 
 
@@ -430,6 +399,13 @@ class ICEM3D:
         f.write("ic_geo_set_part surface srf." +str(self.faces_simmetry[-1])+ " LEFT_SYM 0\n")
         f.write("ic_delete_empty_parts\n")
 
+        # Create axis
+        # f.write("ic_geo_set_part curve crv.22 ROT_AXIS 0\n")
+        # f.write("ic_delete_empty_parts\n")
+        
+        f.write("ic_geo_set_part surface srf."+str(self.rot_axis_surf)+" ROT_AXIS_SURF 0\n")
+        f.write("ic_delete_empty_parts\n")
+
         # Create walls surfaces
         f.write("ic_geo_set_part surface srf." +str(self.walls[0])+ " HUB_WALL 0\n")
         f.write("ic_delete_empty_parts\n")
@@ -508,25 +484,43 @@ class ICEM3D:
         # Revolve the hub and shroud curves 
         walls = []
         i_surf = self.surfaces_count
-
-        line_hub2= str(self.lines_hub2[0])
+        
+        # HERE I REVOLVE THE DISPLACED ROTATIONAL AXIS
+        line_rot_axis= str(self.rot_axis_surf)
         f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_hub2 + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_rot_axis + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
-        walls.append(i_surf+1)
+        self.rot_axis_surf=i_surf+1
         
-        line_shroud2= str(self.lines_shroud2[0])
+
+
+        line_hub2= str(self.lines_hub2[0])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
-        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_shroud2 + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_hub2 + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
         f.write("ic_set_dormant_pickable point 0 {}\n")
         f.write("ic_set_dormant_pickable curve 0 {}\n")
         walls.append(i_surf+2)
+        
+        line_shroud2= str(self.lines_shroud2[0])
+        f.write("ic_set_global geo_cad 0.0006 toler\n")
+        f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+3) + " crv." + line_shroud2 + " pnt." + str(points_count-1) + " {1 0 0} 0 " + str(self.wedge) + " c 1\n")
+        f.write("ic_set_global geo_cad 0.001 toler\n")
+        f.write("ic_set_dormant_pickable point 0 {}\n")
+        f.write("ic_set_dormant_pickable curve 0 {}\n")
+        walls.append(i_surf+3)
+
+
+
 
         # Create wall lines as a reference for blocks edges association. Also need 2 point per line
         lines_count = self.lines_count
+
+        lines_count += 2 # +2 due to the rot_axis line
+        f.write("ic_curve arc_ctr_rad GEOM crv."+str(lines_count)+" {pnt."+str(points_rot_axis[i])+" pnt."+str(self.points_hub[i])+" pnt."+str(self.points_hub2[i])+" 0.0 {} {} 0}\n")
+
         lines_wall_hub = []
         for i in range(len(points_rot_axis)):
             lines_count += 1 
@@ -537,6 +531,9 @@ class ICEM3D:
             lines_count += 1 
             lines_wall_shroud.append(lines_count)
             f.write("ic_curve arc_ctr_rad GEOM crv."+str(lines_count)+" {pnt."+str(points_rot_axis[i])+" pnt."+str(self.points_shroud[i])+" pnt."+str(self.points_shroud2[i])+" 0.0 {} {} 0}\n")
+        
+
+       
         
         
 
@@ -555,7 +552,7 @@ class ICEM3D:
 
         # Storing the hub and shroud wall surface identifiers into the class.
         self.walls = walls
-        self.surfaces_count += len(walls)
+        self.surfaces_count += 3
         
 
 
@@ -611,11 +608,22 @@ class ICEM3D:
 
         loop_hub = "{"
         loop_shroud = ""
+
+        # Copy and rotate the rotational axis line (small discrepancy due to the need of a surface)
         f.write("ic_set_global geo_cad 0.0006 toler\n")
+        lines_count += 1
+        f.write("ic_geo_duplicate_set_fam_and_data curve crv." + str(self.lines_hub[0]) + " crv." + str(lines_count) + " {} _0\n")
+        lines_hub2.append(lines_count)
+        f.write("ic_move_geometry curve names crv." + str(lines_count) + " rotate " + str(self.wedge) + " rotate_axis {1 0 0} cent {0 0 0}\n")
+        f.write("ic_geo_reset_data_structures\n")
+        f.write("ic_geo_configure_one_attribute surface shade wire\n")
+        self.rot_axis_surf = lines_count
+
+
         # Copy hub lines to hub2
-        for i in (self.lines_hub):
+        for i in range (1,len(self.lines_hub)):
             lines_count += 1
-            f.write("ic_geo_duplicate_set_fam_and_data curve crv." + str(i) + " crv." + str(lines_count) + " {} _0\n")
+            f.write("ic_geo_duplicate_set_fam_and_data curve crv." + str(self.lines_hub[i]) + " crv." + str(lines_count) + " {} _0\n")
             loop_hub = loop_hub + "crv." + str(lines_count) + " "
             lines_hub2.append(lines_count)
 
@@ -713,8 +721,17 @@ class ICEM3D:
         # Looping through the hub and shroud points to build lines defining the hub and shroud shape.
         for i in range(len(self.points_hub)-1):
             # self.factory.addLine(self.points_hub[i], self.points_hub[i+1], i_line)
-            f.write("ic_delete_geometry curve names crv."+str(i_line)+" 0\n")
-            f.write("ic_curve point GEOM crv."+str(i_line)+" {pnt."+str(self.points_hub[i])+" pnt."+str(self.points_hub[i+1])+"}\n")
+            if i != 1:
+                f.write("ic_delete_geometry curve names crv."+str(i_line)+" 0\n")
+                f.write("ic_curve point GEOM crv."+str(i_line)+" {pnt."+str(self.points_hub[i])+" pnt."+str(self.points_hub[i+1])+"}\n")
+            else:
+                
+                f.write("ic_point {} GEOM pnt."+str(self.points_count+1)+" "+str(self.coords_hub[0,i+1])+","+str(self.coords_hub[1,i])+","+str(self.coords_hub[2,i])+"\n")
+                f.write("ic_delete_geometry curve names crv."+str(i_line)+" 0\n")
+                f.write("ic_curve arc_ctr_rad GEOM crv."+str(i_line)+" {pnt."+str(self.points_count+1)+" pnt."+str(self.points_hub[i])+" pnt."+str(self.points_hub[i+1])+" 0.0 {} {} 0}\n")
+                f.write("ic_geo_incident point pnt."+str(self.points_count+1)+" 1\n")
+                f.write("ic_delete_geometry point names pnt."+str(self.points_count+1)+" 0 1\n")
+                f.write("ic_set_dormant_pickable point 0 {}\n")
             lines_hub.append(i_line)
             length_hub.append(np.sqrt(np.sum(np.array(self.coords_hub[:, i+1] - self.coords_hub[:, i])**2)))
             i_line += 1
@@ -773,12 +790,7 @@ class ICEM3D:
         # Calculating number of rows.
         n_rows = len(X_LE[0, :])
 
-        # The inlet and outlet patches are placed two axial chords/blade span from the first and last blade row respectively.
-        # The axial coordinates of the inlet and outlet are calculated here.
-        # x_min = min(X_LE[:, 0] - 2*(X_TE[:, 0] - X_LE[:, 0]))
-        # x_max = max(X_TE[:, -1] + 2*(X_TE[:, -1] - X_LE[:, -1]))
-        x_min = min(X_LE[:, 0] - 1.5*(R_LE[-1, 0] - R_LE[0, 0]))
-        x_max = max(X_TE[:, -1] + 1.5*(R_TE[-1, -1] - R_TE[0, -1]))
+    
 
         # Each point has an identifier. This number is progressively updated with each point and stored in the
         # respective lists for the hub and shroud patches.
@@ -800,27 +812,33 @@ class ICEM3D:
         # in positive and negative direction around the X-axis to set the periodic boundary patches.
         theta = 0.5*self.wedge*np.pi/180    # Converting the wedge angle to radians
 
+        # The inlet and outlet patches are placed two axial chords/blade span from the first and last blade row respectively.
+        # The axial coordinates of the inlet and outlet are calculated here.
+        x_min = min(X_LE[:, 0] - 0.95*R_LE[0, 0] )
+        x_max = max(X_TE[:, -1] + 1.5*(R_TE[-1, -1] - R_TE[0, -1]))
+
+
         # Defining the inlet point at the hub section
-        # Z_hub.append(x_min)
-        # X_hub.append(R_LE[0, 0]*np.sin(theta))
+        X_hub.append(x_min- (R_LE[-1, 0] - R_LE[0, 0]))
+        Z_hub.append(0.05*R_LE[0, 0]*np.sin(theta))
+        Y_hub.append(0.05*R_LE[0, 0] * np.cos(theta))
+        points_hub.append(i_point)
+        i_point += 1
+        
         X_hub.append(x_min)
-        Z_hub.append(R_LE[0, 0]*np.sin(theta))
-        Y_hub.append(R_LE[0, 0] * np.cos(theta))
+        Z_hub.append(0.05*R_LE[0, 0]*np.sin(theta))
+        Y_hub.append(0.05*R_LE[0, 0] * np.cos(theta))
         points_hub.append(i_point)
         i_point += 1
 
         # Defining the points defining the hub shape between the inlet and outlet
         for i in range(n_rows):
-            # Z_hub.append(X_LE[0, i])
-            # X_hub.append(R_LE[0, i] * np.sin(theta))
             X_hub.append(X_LE[0, i])
             Z_hub.append(R_LE[0, i] * np.sin(theta))
             Y_hub.append(R_LE[0, i] * np.cos(theta))
             points_hub.append(i_point)
             i_point += 1
 
-            # Z_hub.append(X_TE[0, i])
-            # X_hub.append(R_TE[0, i] * np.sin(theta))
             X_hub.append(X_TE[0, i])
             Z_hub.append(R_TE[0, i] * np.sin(theta))
             Y_hub.append(R_TE[0, i] * np.cos(theta))
@@ -828,8 +846,6 @@ class ICEM3D:
             i_point += 1
 
         # Defining the outlet point at the hub section
-        # Z_hub.append(x_max)
-        # X_hub.append(R_TE[0, -1] * np.sin(theta))
         X_hub.append(x_max)
         Z_hub.append(R_TE[0, -1] * np.sin(theta))
         Y_hub.append(R_TE[0, -1] * np.cos(theta))
@@ -837,8 +853,12 @@ class ICEM3D:
         i_point += 1
 
         # Defining the inlet point at the shroud section
-        # Z_shroud.append(x_min)
-        # X_shroud.append(R_LE[-1, 0] * np.sin(theta))
+        X_shroud.append(x_min- (R_LE[-1, 0] - R_LE[0, 0]))
+        Z_shroud.append(R_LE[-1, 0] * np.sin(theta))
+        Y_shroud.append(R_LE[-1, 0] * np.cos(theta))
+        points_shroud.append(i_point)
+        i_point += 1
+
         X_shroud.append(x_min)
         Z_shroud.append(R_LE[-1, 0] * np.sin(theta))
         Y_shroud.append(R_LE[-1, 0] * np.cos(theta))
@@ -847,16 +867,12 @@ class ICEM3D:
 
         # Defining the points defining the shroud shape between the inlet and outlet
         for i in range(n_rows):
-            # Z_shroud.append(X_LE[-1, i])
-            # X_shroud.append(R_LE[-1, i] * np.sin(theta))
             X_shroud.append(X_LE[-1, i])
             Z_shroud.append(R_LE[-1, i] * np.sin(theta))
             Y_shroud.append(R_LE[-1, i] * np.cos(theta))
             points_shroud.append(i_point)
             i_point += 1
 
-            # Z_shroud.append(X_TE[-1, i])
-            # X_shroud.append(R_TE[-1, i] * np.sin(theta))
             X_shroud.append(X_TE[-1, i])
             Z_shroud.append(R_TE[-1, i] * np.sin(theta))
             Y_shroud.append(R_TE[-1, i] * np.cos(theta))
@@ -864,8 +880,6 @@ class ICEM3D:
             i_point += 1
 
         # Defining the outlet point on the shroud section
-        # Z_shroud.append(x_max)
-        # X_shroud.append(R_TE[-1, -1] * np.sin(theta))
         X_shroud.append(x_max)
         Z_shroud.append(R_TE[-1, -1] * np.sin(theta))
         Y_shroud.append(R_TE[-1, -1] * np.cos(theta))
