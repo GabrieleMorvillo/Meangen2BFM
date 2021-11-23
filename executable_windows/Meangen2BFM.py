@@ -31,8 +31,9 @@ from Meangen2Parablade import Meangen2Parablade
 from Parablade2UMG2 import WriteUMG, writeStageMesh_BFM, writeStageMesh_Blade
 from SU2Writer import writeBFMinput, ReadUserInput, writeSU2input
 from Mesh3D import Gmesh3D, Gmesh2D, FullAnnulus
-from Mesh3D_ICEM import ICEM3D
-from Mesh3D_ICEM_spherefan import ICEM3D_sphere
+# from Mesh3D_ICEM import ICEM3D
+# from Mesh3D_ICEM_spherefan import ICEM3D_sphere
+from mesh3d_sphere_outogrid import ICEM3D_sphere
 from TURBO3D import TURBO
 from dataPlotter import axial_data_plotter
 # from ParaviewPost import AxialMachine
