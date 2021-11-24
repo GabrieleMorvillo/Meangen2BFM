@@ -96,7 +96,7 @@ class ICEM3D_sphere:
         self.blocking()
 
         # Creating 3D mesh.
-        # self.mesh()
+        self.mesh()
         
         # # Save mesh to ANSYS CFX input file
         # self.savemesh()
@@ -153,24 +153,50 @@ class ICEM3D_sphere:
 
 
     def mesh(self):
-         f = open("ICEM_input.txt", "a")
+        f = open("ICEM_input.txt", "a")
 
          # Seed the edges in axial direction
          
-         f.write("ic_hex_set_mesh 22 73 n "+str(round(abs((self.coords_hub[0,1]-self.coords_hub[0,0])/0.05)))+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 73 89 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 89 105 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[1])+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 105 121 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[2])+" h2rel "+str(self.BL_thick/self.length_hub[2])+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 121 137 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 137 38 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[4])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 22 73 n "+str(round(abs((self.coords_hub[0,1]-self.coords_hub[0,0])/0.05)))+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 73 89 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 89 105 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[1])+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 105 121 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[2])+" h2rel "+str(self.BL_thick/self.length_hub[2])+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 121 137 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 137 38 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[4])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
         
          # Seed the edges in radial direction
-         n_radial = round(self.n_point*self.length_rad[0]/self.length_hub[0])
-         f.write("ic_hex_set_mesh 22 26 n "+str(n_radial)+" h1rel "+str(0.01)+" h2rel "+str(0.01)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        n_radial = round(self.n_point*self.length_rad[0]/self.length_hub[0])
+        #  ic_hex_set_mesh 181 221 n 40 h1rel 0.0141172916367 h2rel 0.000282344703355 r1 1.2 r2 1.2 lmax 1e+10 exp2 copy_to_parallel unlocked
+        #  ic_hex_set_mesh 223 90 n 40 h1rel 0.0141172351677 h2rel 0.000282344703355 r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked
+        f.write("ic_hex_set_mesh 181 26 n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+        # for i in range(0,3):
+        #     f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][0])+" "+str(self.nodes_mid[i][0])+" n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform\n")
+        #     f.write("ic_hex_set_mesh "+str(self.nodes_ogrid[i][0])+" "+str(self.nodes_mid[i][1])+" n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform\n")
+        #     f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][1])+" "+str(self.nodes_ogrid[i][1])+" n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform\n")
+        # for k in range(2,7):
+        #     for i in range(0,3):
+        #         f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][k])+" "+str(self.nodes_mid[i][k])+" n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2\n")
+        #         f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][k])+" "+str(self.nodes_mid[i][k])+" n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2\n")
+        f.write("ic_hex_set_mesh 22 181  n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
 
 
-         f.write("ic_hex_create_mesh GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3\n")
-         f.close()
+        # Seed the edges in axial direction
+        f.write("ic_hex_set_mesh 26 74 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 74 90 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 90 106 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 106 122 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 122 138 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 138 154 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 154 42 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+
+
+        # Seed the edges in ogrid
+        f.write("ic_hex_set_mesh 251 250 n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+        #  f.write("ic_hex_set_mesh 243 182 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+
+
+        #  f.write("ic_hex_create_mesh GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3\n")
+        f.close()
 
 
 
@@ -236,38 +262,64 @@ class ICEM3D_sphere:
         f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
         f.write("ic_hex_split_grid 122 42 pnt."+str(self.points_shroud[5])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
         f.write("ic_hex_split_grid 138 42 pnt."+str(self.points_shroud[6])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 22 26 pnt."+str(self.points_mid[0][0])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+       
+        # Create lower external Ogrid
+        low_blocks=[13,27,28,29,30,31,32]
 
-        f.write("ic_hex_mark_blocks unmark\n")
-        f.write("ic_hex_mark_blocks superblock 13\n")
-        f.write("ic_hex_mark_blocks superblock 27\n")
-        f.write("ic_hex_split_grid 89 90 pnt."+str(self.points_hub[2])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID marked\n")
-        f.write("ic_hex_mark_blocks unmark\n")
-        f.write("ic_hex_mark_blocks unmark\n")
-        f.write("ic_hex_mark_blocks superblock 28\n")
-        f.write("ic_hex_mark_blocks superblock 29\n")
-        f.write("ic_hex_mark_blocks superblock 30\n")
-        f.write("ic_hex_mark_blocks superblock 31\n")
-        f.write("ic_hex_mark_blocks superblock 32\n")
-        f.write("ic_hex_split_grid 183 90 pnt."+str(self.points_mid[2][0])+" m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID marked\n")
- 
-        # # Create reference curves??? Is it necessary? Maybe not with OGRID
-        # f.write("ic_set_global geo_cad 0.0008 toler\n")
-        # f.write("ic_point {} GEOM pnt."+str(self.points_count+1)+" "+str(self.coords_hub[0,2])+","+str(self.coords_hub[1,1])+","+str(self.coords_hub[2,1])+"\n")
-        # f.write("ic_delete_geometry curve names crv."+str(self.lines_count+1)+" 0\n")
-        # f.write("ic_curve arc_ctr_rad GEOM crv."+str(self.lines_count+1)+" {pnt."+str(self.points_count+1)+" pnt."+str(self.points_ogrid[0][0])+" pnt."+str(self.points_mid[2][0])+" 0.0 {} {} 0}\n")
-        # f.write("ic_geo_incident point pnt."+str(self.points_count+1)+" 1\n")
-        # f.write("ic_geo_duplicate_set_fam_and_data curve crv." + str(self.lines_count+1) + " crv." + str(self.lines_count+2) + " {} _0\n")
-        # f.write("ic_move_geometry curve names crv."+str(self.lines_count+2)+" rotate " + str(self.wedge) + " rotate_axis {1 0 0} cent {0 0 0}\n")
-  
-        # Assign nodes to vertices
         nodes_hub = [22,73,89,105,121,137,153,38]
         nodes_hub2 = [21,69,85,101,117,133,149,37]
-        nodes_mid = [181,182,183,224,225,226,227,228]
-        nodes_mid2 = [171,172,173,214,215,216,217,218]
+        nodes_mid = [181,182,183,184,185,186,187,188]
+        nodes_mid2 = [171,172,173,174,175,176,177,178]
         nodes_shroud = [26,74,90,106,122,138,154,42]
         nodes_shroud2 = [25,70,86,102,118,134,150,41] 
-        nodes_ogrid=[241,243,247,245]
-        nodes_ogrid2=[240,242,246,244]
+ 
+        # lat_faces=""
+        # bot_faces=""
+        # for i in range(1,len(low_blocks)):
+        #     f.write("ic_hex_mark_blocks superblock "+str(low_blocks[i])+"\n")
+        #     lat_faces = lat_faces + " {"+str(nodes_hub[i])+" "+str(nodes_hub[i+1])+" "+str(nodes_mid[i])+" "+str(nodes_mid[i+1])+"}"
+        #     lat_faces = lat_faces + " {"+str(nodes_hub2[i])+" "+str(nodes_hub2[i+1])+" "+str(nodes_mid2[i])+" "+str(nodes_mid2[i+1])+"}"
+        #     bot_faces= bot_faces + " {"+str(nodes_hub[i])+" "+str(nodes_hub[i+1])+" "+str(nodes_hub2[i])+" "+str(nodes_hub2[i+1])+"}"
+        # end_face=" {"+str(nodes_hub[-1])+" "+str(nodes_hub2[-1])+" "+str(nodes_mid[-1])+" "+str(nodes_mid2[-1])+"}"
+        # f.write("ic_hex_mark_blocks face_neighbors corners "+lat_faces+bot_faces+end_face+"\n")
+        # f.write("ic_hex_ogrid 1 m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
+        f.write("ic_hex_mark_blocks unmark\n")
+        for i in range(1,len(low_blocks)):
+            f.write("ic_hex_mark_blocks superblock "+str(low_blocks[i])+"\n")
+        f.write("ic_hex_ogrid 1 not_marked m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
+        f.write("ic_hex_mark_blocks unmark\n")
+        
+
+
+        # delete lower blocks
+        
+        for i in range(1,len(low_blocks)):
+            f.write("ic_hex_mark_blocks superblock "+str(low_blocks[i])+"\n")
+        f.write("ic_hex_change_element_id VORFN\n")
+        f.write("ic_hex_mark_blocks unmark\n")
+
+
+
+
+
+        
+    
+
+
+        # Assign nodes to vertices
+        nodes_hub =      [22,    73,  183,  184,  185,  186,  187,   188]
+        nodes_hub2 =     [ 21,   69,  173,  174,  175,  176,  177,   178]
+
+        nodes_mid =      [181,  203,  207,  211,  215,  219,  223,  227]
+        nodes_mid2 =     [171,  202,  206,  210,  214,  218,  222,  226]
+
+        nodes_shroud =   [ 26,   74,   90,  106,  122,  138,  154,   42]
+        nodes_shroud2 =  [ 25,   70,   86,  102,  118,  134,  150,   41]
+
+        nodes_ogrid=     [201,  182]
+        nodes_ogrid2=    [200,  172]
+        
         for i in range(len(self.points_hub)):
             f.write("ic_hex_move_node "+str(nodes_hub[i])+" pnt." +str(self.points_hub[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_hub2[i])+" pnt." +str(self.points_hub2[i])+"\n")
@@ -277,79 +329,87 @@ class ICEM3D_sphere:
             else:
                  f.write("ic_hex_move_node "+str(nodes_shroud[i])+" pnt." +str(self.points_ogrid[-1][0])+"\n")
                  f.write("ic_hex_move_node "+str(nodes_shroud2[i])+" pnt." +str(self.points_ogrid[-1][-1])+"\n")
-        # f.write("ic_hex_move_node "+str(nodes_mid[0])+" pnt." +str(self.points_mid[0][0])+"\n")
-        # f.write("ic_hex_move_node "+str(nodes_mid2[0])+" pnt." +str(self.points_mid[0][-1])+"\n")
-        f.write("ic_hex_move_node 223 pnt." +str(self.points_mid[2][0])+"\n")
-        f.write("ic_hex_move_node 213 pnt." +str(self.points_mid[2][-1])+"\n")  
-        # 223
-        # 213
+      
         # for i in range(2,8): 
         for i in range(len(nodes_mid)):
-            if i!=2:
-                f.write("ic_hex_move_node "+str(nodes_mid[i])+" pnt." +str(self.points_mid[i][0])+"\n")
-                f.write("ic_hex_move_node "+str(nodes_mid2[i])+" pnt." +str(self.points_mid[i][-1])+"\n")
-            else:
-                f.write("ic_hex_move_node "+str(nodes_mid[i])+" pnt." +str(self.points_hub[i])+"\n")
-                f.write("ic_hex_move_node "+str(nodes_mid2[i])+" pnt." +str(self.points_hub2[i])+"\n")
+            # if i!=2:
+            #     f.write("ic_hex_move_node "+str(nodes_mid[i])+" pnt." +str(self.points_mid[i][0])+"\n")
+            #     f.write("ic_hex_move_node "+str(nodes_mid2[i])+" pnt." +str(self.points_mid[i][-1])+"\n")
+            # else:
+            f.write("ic_hex_move_node "+str(nodes_mid[i])+" pnt." +str(self.points_mid[i][0])+"\n")
+            f.write("ic_hex_move_node "+str(nodes_mid2[i])+" pnt." +str(self.points_mid[i][-1])+"\n")
 
-        # Sphere Ogrid
-        f.write("ic_hex_mark_blocks unmark\n")
-        f.write("ic_hex_mark_blocks superblock 27\n")
-        f.write("ic_hex_ogrid 0.5 not_marked m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
-        f.write("ic_hex_mark_blocks unmark\n")
+        for i in range(len(nodes_ogrid)):
+            f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_ogrid[i][0])+"\n")
+            f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_ogrid[i][-1])+"\n")
 
 
-        f.write("ic_hex_find_comp_curve crv.2\n")
-        f.write("ic_hex_set_edge_projection 73 182 0 1 crv.2\n")
-        f.write("ic_hex_project_to_surface 73 182\n")
-        f.write("ic_hex_set_edge_projection 182 183 0 1 crv.2\n")
-        f.write("ic_hex_project_to_surface 182 183\n")
-        f.write("ic_hex_find_comp_curve crv.23\n")
-        f.write("ic_hex_set_edge_projection 69 172 0 1 crv.23\n")
-        f.write("ic_hex_project_to_surface 69 172\n")
-        f.write("ic_hex_set_edge_projection 172 173 0 1 crv.23\n")
-        f.write("ic_hex_project_to_surface 172 173\n")
+        # # Sphere Ogrid
+        # f.write("ic_hex_mark_blocks unmark\n")
+        # f.write("ic_hex_mark_blocks superblock 27\n")
+        # f.write("ic_hex_ogrid 0.5 not_marked m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
+        # f.write("ic_hex_mark_blocks unmark\n")
+        # nodes_ogrid=[201,203,207,205]
+        # nodes_ogrid2=[200,202,206,204]
 
-        f.write("ic_hex_merge_blocks 41 43 -version 51\n")
 
-        f.write("ic_hex_move_node 241 pnt." +str(self.points_ogrid[0][0])+"\n")
-        f.write("ic_hex_move_node 240 pnt." +str(self.points_ogrid[0][-1])+"\n")
-        f.write("ic_hex_move_node 243 pnt." +str(self.points_mid[1][0])+"\n")
-        f.write("ic_hex_move_node 242 pnt." +str(self.points_mid[1][-1])+"\n")
-        f.write("ic_hex_move_node 247 pnt." +str(self.points_mid[2][0])+"\n")
-        f.write("ic_hex_move_node 246 pnt." +str(self.points_mid[2][-1])+"\n")
-        f.write("ic_hex_move_node 245 pnt." +str(self.points_hub[2])+"\n")
-        f.write("ic_hex_move_node 244 pnt." +str(self.points_hub2[2])+"\n")
-        f.write("ic_hex_move_node 182 pnt." +str(self.points_ogrid[1][0])+"\n")
-        f.write("ic_hex_move_node 172 pnt." +str(self.points_ogrid[1][-1])+"\n")
+        # f.write("ic_hex_find_comp_curve crv.2\n")
+        # f.write("ic_hex_set_edge_projection 73 182 0 1 crv.2\n")
+        # f.write("ic_hex_project_to_surface 73 182\n")
+        # f.write("ic_hex_set_edge_projection 182 183 0 1 crv.2\n")
+        # f.write("ic_hex_project_to_surface 182 183\n")
+        # f.write("ic_hex_find_comp_curve crv.23\n")
+        # f.write("ic_hex_set_edge_projection 69 172 0 1 crv.23\n")
+        # f.write("ic_hex_project_to_surface 69 172\n")
+        # f.write("ic_hex_set_edge_projection 172 173 0 1 crv.23\n")
+        # f.write("ic_hex_project_to_surface 172 173\n")
 
-        f.write("ic_hex_mark_blocks unmark\n")
-        f.write("ic_hex_mark_blocks superblock 27\n")
-        f.write("ic_hex_change_element_id VORFN\n")
-        
-        
-
+        # # f.write("ic_hex_merge_blocks 41 43 -version 51\n")
         # f.write("ic_hex_mark_blocks unmark\n")
         # f.write("ic_hex_mark_blocks superblock 41\n")
         # f.write("ic_hex_change_element_id VORFN\n")
-        # #Redefine hub points due to block cancellation
+        # # f.write("ic_hex_set_edge_projection 206 207 0 3 0\n")    # Removing the block I also have to disaccioate the respective edge
+
+
+        # for i in range(len(nodes_ogrid)):
+        #     if i==0:
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_ogrid[0][0])+"\n")
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_ogrid[0][-1])+"\n")
+        #     elif i==1:                
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_mid[1][0])+"\n")
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_mid[1][-1])+"\n")
+        #     elif i==2:
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_mid[2][0])+"\n")
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_mid[2][-1])+"\n")
+        #     else:
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_hub[2])+"\n")
+        #         f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_hub2[2])+"\n")
+        # f.write("ic_hex_move_node 182 pnt." +str(self.points_ogrid[1][0])+"\n")
+        # f.write("ic_hex_move_node 172 pnt." +str(self.points_ogrid[1][-1])+"\n")
+
+        # f.write("ic_hex_mark_blocks unmark\n")
+        # f.write("ic_hex_mark_blocks superblock 27\n")
+        # f.write("ic_hex_change_element_id VORFN\n")
+        
+        
+
+       
+        # # #Redefine hub points due to block cancellation
        
         
 
 
-        # # Assign edges to curves
-        # for i in range(len(self.points_hub)):
-        #     f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
-        # for i in range(len(self.points_hub)):
-        #     f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
-        # f.write("ic_hex_set_edge_projection 73 89 0 1 crv.2\n")
-        # f.write("ic_hex_set_edge_projection 69 85 0 1 crv.20\n")
+        # # # Assign edges to curves
+        # # for i in range(len(self.points_hub)):
+        # #     f.write("ic_hex_set_edge_projection "+str(nodes_hub[i])+" "+str(nodes_hub2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
+        # # for i in range(len(self.points_hub)):
+        # #     f.write("ic_hex_set_edge_projection "+str(nodes_shroud[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
+        # # f.write("ic_hex_set_edge_projection 73 89 0 1 crv.2\n")
+        # # f.write("ic_hex_set_edge_projection 69 85 0 1 crv.20\n")
 
 
         # O-Grid split
-        # blocks = [33,13,34,43,40,35,41,28,36,29,37,30,38,31]
-        # blocks = [33,13,34,43,40,35,28,36,29,37,30,38,31]
-        blocks = [33,13,34,41,40,35,28,36,29,37,30,38,31]
+        blocks = [33,13,34,42,40,35,46,36,50,37,54,38,58,39,63]
 
         for i in blocks:
             f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
@@ -361,7 +421,7 @@ class ICEM3D_sphere:
         for i in range(len(nodes_shroud)-1):
             loop =loop+"{"+str(nodes_shroud2[i])+" "+str(nodes_shroud2[i+1])+" "+str(nodes_shroud[i])+" "+str(nodes_shroud[i+1])+"} "
         f.write("ic_hex_mark_blocks face_neighbors corners "+loop+"\n")
-        f.write("ic_hex_ogrid 0.5 m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
+        f.write("ic_hex_ogrid 1 m GEOM RIGHT_SYM LEFT_SYM ROT_AXIS_SURF HUB_WALL SHROUD_WALL INLET OUTLET SOLID -version 50\n")
         f.write("ic_hex_mark_blocks unmark\n")
 
 
@@ -369,43 +429,20 @@ class ICEM3D_sphere:
 
 
         # Assign splitted nodes to vertices. I must rename the vertices since after block cancellation they changed
-        nodes_hub =      [22,    73,  183,  105,  121,  137,  153,   38]
-        nodes_hub3 =     [259,  270,  288,  297,  307,  317,  327,  337]
-        nodes_hub23 =    [258,  268,  286,  296,  306,  316,  326,  336]
-        nodes_hub2 =     [ 21,   69,  173,  101,  117,  133,  149,   37]
+        nodes_hub3 =     [237,  246,  258,  266,  274,  282,  290,  302]
+        nodes_hub23 =    [236,  244,  256,  264,  272,  280,  288,  300]
 
-        nodes_mid =      [181,  243,  223,  224,  225,  226,  227,  228]
-        nodes_mid3 =     [261,  275,  291,  301,  311,  321,  331,  341]
-        nodes_mid23 =    [260,  273,  290,  300,  310,  320,  330,  340]
-        nodes_mid2 =     [171,  242,  213,  214,  215,  216,  217,  218]
-
-        nodes_shroud =   [ 26,   74,   90,  106,  122,  138,  154,   42]
-        nodes_shroud3 =  [265,  279,  293,  303,  313,  323,  333,  343]
-        nodes_shroud23 = [264,  278,  292,  302,  312,  322,  332,  342]
-        nodes_shroud2 =  [ 25,   70,   86,  102,  118,  134,  150,   41]
-
-        nodes_ogrid=     [241,  182,  245,   89,  247]
-        nodes_ogrid3 =   [271,  274,  285,  284,  289]
-        nodes_ogrid23 =  [269,  272,  283,  282,  287]
-        nodes_ogrid2=    [240,  172,  244,   85,  246]
-        # nodes_ogrid=     [241,  182,   89,  223]
-        # nodes_ogrid3 =   [271,  274,  285,  289]
-        # nodes_ogrid23 =  [269,  272,  283,  287]
-        # nodes_ogrid2=    [240,  172,   85,  213]
-        #  (89,284,282,85) 
-        # (245,285,283,244)
-        # e un'altra linea fittizia per ogrid (183---173),(245---244)(284---282 da assegnare a estremi)
+        nodes_mid3 =     [239,  251,  259,  267,  275,  283,  291,  303]
+        nodes_mid23 =    [238,  249,  257,  265,  273,  281,  289,  301]
         
-        # # merge overlapped vertices
-        # for i in [245,183,284]:
-        #     f.write("ic_hex_collapse_edge 89 "+str(i)+" join keep_first -version 101 fix_first\n")
-        # for i in [244,173,282]:
-        #     f.write("ic_hex_collapse_edge 85 "+str(i)+" join keep_first -version 101 fix_first\n")
-        # f.write("ic_hex_collapse_edge 223 247 join keep_first -version 101 fix_first\n")
-        # f.write("ic_hex_collapse_edge 213 246 join keep_first -version 101 fix_first\n")
+        nodes_shroud3 =  [241,  253,  261,  269,  277,  285,  293,  305]
+        nodes_shroud23 = [240,  252,  260,  268,  276,  284,  292,  304]
+    
+        nodes_ogrid3 =   [247,  250]
+        nodes_ogrid23 =  [245,  248]
         
-        f.write("ic_hex_move_node 284 pnt." +str(self.points_lines_wall_hub3[2])+"\n")
-        f.write("ic_hex_move_node 282 pnt." +str(self.points_lines_wall_hub23[2])+"\n")
+        # f.write("ic_hex_move_node 284 pnt." +str(self.points_lines_wall_hub3[2])+"\n")
+        # f.write("ic_hex_move_node 282 pnt." +str(self.points_lines_wall_hub23[2])+"\n")
 
 
         for i in range(len(nodes_hub3)):
@@ -413,16 +450,13 @@ class ICEM3D_sphere:
             f.write("ic_hex_move_node "+str(nodes_hub23[i])+" pnt." +str(self.points_lines_wall_hub23[i])+"\n")
 
         for i in range(len(nodes_ogrid3)):
-            if i==2 or i==3:
-                f.write("ic_hex_move_node "+str(nodes_ogrid3[i])+" pnt." +str(self.points_lines_wall_hub3[2])+"\n")
-                f.write("ic_hex_move_node "+str(nodes_ogrid23[i])+" pnt." +str(self.points_lines_wall_hub23[2])+"\n")
-                f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_hub[2])+"\n")
-                f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_hub2[2])+"\n")
+            # if i==2:# or i==3:
+            #     f.write("ic_hex_move_node "+str(nodes_ogrid3[i])+" pnt." +str(self.points_lines_wall_hub3[2])+"\n")
+            #     f.write("ic_hex_move_node "+str(nodes_ogrid23[i])+" pnt." +str(self.points_lines_wall_hub23[2])+"\n")
+            #     f.write("ic_hex_move_node "+str(nodes_ogrid[i])+" pnt." +str(self.points_hub[2])+"\n")
+            #     f.write("ic_hex_move_node "+str(nodes_ogrid2[i])+" pnt." +str(self.points_hub2[2])+"\n")
 
-            elif i==4:
-                f.write("ic_hex_move_node "+str(nodes_ogrid3[i])+" pnt." +str(self.points_mid[2][1])+"\n")
-                f.write("ic_hex_move_node "+str(nodes_ogrid23[i])+" pnt." +str(self.points_mid[2][2])+"\n") 
-            else:
+            # else:
                 f.write("ic_hex_move_node "+str(nodes_ogrid3[i])+" pnt." +str(self.points_ogrid[i][1])+"\n")
                 f.write("ic_hex_move_node "+str(nodes_ogrid23[i])+" pnt." +str(self.points_ogrid[i][2])+"\n")
 
@@ -437,16 +471,9 @@ class ICEM3D_sphere:
         for i in range(len(nodes_mid3)):
             f.write("ic_hex_move_node "+str(nodes_mid3[i])+" pnt." +str(self.points_mid[i][1])+"\n")
             f.write("ic_hex_move_node "+str(nodes_mid23[i])+" pnt." +str(self.points_mid[i][2])+"\n")
-        # f.write("ic_hex_move_node 291 pnt." +str(self.points_mid[2][1])+"\n")
-        # f.write("ic_hex_move_node 290 pnt." +str(self.points_mid[2][2])+"\n")
-            
-        # # merge overlapped vertices
-        # for i in [245,183,284]:
-        #     f.write("ic_hex_collapse_edge 89 "+str(i)+" join keep_first -version 101 fix_first\n")
-        # for i in [244,173,282]:
-        #     f.write("ic_hex_collapse_edge 85 "+str(i)+" join keep_first -version 101 fix_first\n")
-        # f.write("ic_hex_collapse_edge 223 247 join keep_first -version 101 fix_first\n")
-        # f.write("ic_hex_collapse_edge 213 246 join keep_first -version 101 fix_first\n")
+
+        # f.write("ic_hex_set_edge_projection 206 207 0 3 0\n")    # Removing the block I also have to disaccioate the respective edge
+
 
 
          # Assign edges to curves
@@ -473,25 +500,57 @@ class ICEM3D_sphere:
             
         for i in range(len(nodes_ogrid)):
             
-            if i==2 or i==3 :
-                f.write("ic_hex_set_edge_projection "+str(nodes_ogrid[i])+" "+str(nodes_ogrid3[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
-                f.write("ic_hex_set_edge_projection "+str(nodes_ogrid3[i])+" "+str(nodes_ogrid23[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
-                f.write("ic_hex_set_edge_projection "+str(nodes_ogrid23[i])+" "+str(nodes_ogrid2[i])+" 0 1 crv."+str(self.lines_wall_hub[i])+"\n")
-
-            elif i==4:
-                f.write("ic_hex_set_edge_projection "+str(nodes_ogrid[i])+" "+str(nodes_ogrid3[i])+" 0 1 crv."+str(self.lines_wall_mid[2])+"\n")
-                f.write("ic_hex_set_edge_projection "+str(nodes_ogrid3[i])+" "+str(nodes_ogrid23[i])+" 0 1 crv."+str(self.lines_wall_mid[2])+"\n")
-                f.write("ic_hex_set_edge_projection "+str(nodes_ogrid23[i])+" "+str(nodes_ogrid2[i])+" 0 1 crv."+str(self.lines_wall_mid[2])+"\n")
-            else:
+            # if i==2:# or i==3 :
+            #     f.write("ic_hex_set_edge_projection "+str(nodes_ogrid[i])+" "+str(nodes_ogrid3[i])+" 0 1 crv."+str(self.lines_wall_hub[2])+"\n")
+            #     f.write("ic_hex_set_edge_projection "+str(nodes_ogrid3[i])+" "+str(nodes_ogrid23[i])+" 0 1 crv."+str(self.lines_wall_hub[2])+"\n")
+            #     f.write("ic_hex_set_edge_projection "+str(nodes_ogrid23[i])+" "+str(nodes_ogrid2[i])+" 0 1 crv."+str(self.lines_wall_hub[2])+"\n")
+            # else:
                 f.write("ic_hex_set_edge_projection "+str(nodes_ogrid[i])+" "+str(nodes_ogrid3[i])+" 0 1 crv."+str(self.lines_wall_ogrid[i])+"\n")
                 f.write("ic_hex_set_edge_projection "+str(nodes_ogrid3[i])+" "+str(nodes_ogrid23[i])+" 0 1 crv."+str(self.lines_wall_ogrid[i])+"\n")
                 f.write("ic_hex_set_edge_projection "+str(nodes_ogrid23[i])+" "+str(nodes_ogrid2[i])+" 0 1 crv."+str(self.lines_wall_ogrid[i])+"\n")
+            
+        f.write("ic_hex_set_edge_projection "+str(nodes_hub[1])+" "+str(nodes_ogrid[1])+" 0 1 crv.2\n")
+        f.write("ic_hex_set_edge_projection "+str(nodes_ogrid[1])+" "+str(nodes_hub[2])+" 0 1 crv.2\n")
+        f.write("ic_hex_set_edge_projection "+str(nodes_hub2[1])+" "+str(nodes_ogrid2[1])+" 0 1 crv.23\n")
+        f.write("ic_hex_set_edge_projection "+str(nodes_ogrid2[1])+" "+str(nodes_hub2[2])+" 0 1 crv.23\n")
     
         # Remove bottom blocks that are not needed
-        low_blocks=[51,58,68,69,74,79,84,89]
+        low_blocks=[71,78,81,84,89,94,99,104,109]
         for i in low_blocks:
             f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
-            f.write("ic_hex_change_element_id VORFN\n")
+        f.write("ic_hex_change_element_id VORFN\n")
+            # every time I delete one of the central blocks I have a new association of central mid[2] directed towards hub[2]. How do I change it?
+        # f.write("ic_hex_set_edge_projection 243 242 0 3 0\n")
+        # f.write("ic_hex_set_edge_projection 243 239 0 3 0\n")
+        # f.write("ic_hex_set_edge_projection 241 240 0 3 0\n")
+        # f.write("ic_hex_set_edge_projection 237 241 0 3 0\n")
+
+
+        # Store nodes
+        self.nodes_hub=[]
+        self.nodes_hub.append(nodes_hub)
+        self.nodes_hub.append(nodes_hub3)
+        self.nodes_hub.append(nodes_hub23)
+        self.nodes_hub.append(nodes_hub2)
+
+        self.nodes_mid=[]
+        self.nodes_mid.append(nodes_mid)
+        self.nodes_mid.append(nodes_mid3) 
+        self.nodes_mid.append(nodes_mid23)
+        self.nodes_mid.append(nodes_mid2)
+
+        self.nodes_shroud=[]
+        self.nodes_shroud.append(nodes_shroud)
+        self.nodes_shroud.append(nodes_shroud3)
+        self.nodes_shroud.append(nodes_shroud23)
+        self.nodes_shroud.append(nodes_shroud2) 
+
+        self.nodes_ogrid=[]
+        self.nodes_ogrid.append(nodes_ogrid)
+        self.nodes_ogrid.append(nodes_ogrid3)
+        self.nodes_ogrid.append(nodes_ogrid23)
+        self.nodes_ogrid.append(nodes_ogrid2)
+
         
         f.close()
 
