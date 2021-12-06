@@ -376,8 +376,10 @@ class Meangen2Parablade:
             for j in range(len(Z_le)):
                 z_le.append(Z_le[0] + (1 - tip_gap[i]) * (Z_le[j] - Z_le[0]))
                 z_te.append(Z_te[0] + (1 - tip_gap[i]) * (Z_te[j] - Z_te[0]))
-            z_le[0] -= 0.01 * (Z_le[-1] - Z_le[0])
+
+            z_le[0] -= 0.01 * (Z_le[-1] - Z_le[0]) # N.B. I need to go below the hub to interpolate it correctly with BFM
             z_te[0] -= 0.01 * (Z_le[-1] - Z_le[0])
+            # Correct interpolation for the shroud uses a tip gap = -0.01, implemented abhove, not here!
             # z_le[-1] -= tip_gap[i] * (Z_le[-1] - Z_le[0])
             # z_te[-1] -= tip_gap[i] * (Z_le[-1] - Z_le[0])
 
@@ -463,4 +465,99 @@ class Meangen2Parablade:
                  new_line=new_line.replace("THETA_IN",", ".join([str(d) for d in self.theta_in[n_start:n_end, i]]))
                  new_line=new_line.replace("THETA_OUT",", ".join([str(d) for d in self.theta_out[n_start:n_end, i]]))
                  print(new_line,end="")
+            
 
+
+
+
+
+
+
+
+
+
+
+
+            if (i%2)==0:
+                 #----------------------CREATE PARABLADE INPUT FILE FOR BFM (NO TIP GAB)----------------------#
+                 #  Copying template configuration file from template directory.
+                os.system("copy " + template_dir + "\\template_turbine.cfg " + template_dir +"\\Bladerow_" + str(i+1) + "_BFM.cfg")
+                tip_gap[i] = -0.001     # Reset the tip gap just for BFM to avoid backflow
+
+
+                 # Replacing template names in template file by design values or types.
+                # import fileinput
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                 # inside this loop the STDOUT will be redirected to the file
+                 # the comma after each print statement is needed to avoid double line breaks
+                     new_line=line.replace("CAS_type", CASCADE_TYPE)
+                     new_line=new_line.replace("N_sec", str(sec_count))
+                     new_line=new_line.replace("N_point", str(point_count))
+                     new_line=new_line.replace("N_dim", str(int(self.Dimension)))
+                     new_line=new_line.replace("N_blade", str(int(self.N_b[i])))
+                     print(new_line,end="")
+
+
+                # Calculating tangent of stagger angle, which is taken to be the average of the tangent of the inlet and
+                # outlet metal angles.
+                tan_stagger = np.transpose(np.array(0.5 * (np.tan(self.theta_in[n_start:n_end, i]*np.pi/180.0) +
+                                                       np.tan(self.theta_out[n_start:n_end, i]*np.pi/180.0))))
+                 # Calculating and storing stagger angles of the blade rows.
+                stagger = []
+                for m in range(len(tan_stagger)):
+                    stagger.append(math.atan(tan_stagger[m])*180.0/np.pi)
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                    print (line.replace("STAGGER", ", ".join([str(s) for s in stagger])),end="")
+
+
+                X_le = np.transpose(self.X_LE[n_start:n_end, i])
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                    print (line.replace("X_LE", ", ".join([str(s) for s in X_le])),end="")
+                Z_le = np.transpose(self.Z_LE[:, i])
+                Z_te = np.transpose(self.Z_TE[:, i])
+
+            
+                z_le = []
+                z_te = []
+                for j in range(len(Z_le)):
+                    z_le.append(Z_le[0] + (1 - tip_gap[i]) * (Z_le[j] - Z_le[0]))
+                    z_te.append(Z_te[0] + (1 - tip_gap[i]) * (Z_te[j] - Z_te[0]))
+                z_le[0] -= 0.01 * (Z_le[-1] - Z_le[0])
+                z_te[0] -= 0.01 * (Z_le[-1] - Z_le[0])
+
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                    new_line=line.replace("Z_LE", ", ".join([str(s) for s in z_le]))
+                    new_line=new_line.replace("Z_TE", ", ".join([str(s) for s in z_te]))
+                    print(new_line,end="")
+
+
+                X_hub = [0.75*self.X_LE[0, i] + 0.25*self.X_TE[0, i], 0.75*self.X_TE[0, i] + 0.25*self.X_LE[0, i]]
+                Z_hub = [0.75*z_le[0] + 0.25*z_te[0], 0.75*z_te[0] + 0.25*z_le[0]]
+                X_shroud = [0.75 * self.X_LE[-1, i] + 0.25 * self.X_TE[-1, i], 0.75 * self.X_TE[-1, i] + 0.25 *self.X_LE[-1, i]]
+                Z_shroud = [0.75*z_le[-1] + 0.25*z_te[-1], 0.75*z_te[-1] + 0.25*z_le[-1]]
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                    new_line=line.replace("X_HUB", ", ".join([str(s) for s in X_hub]))
+                    new_line=new_line.replace("Z_HUB",", ".join([str(s) for s in Z_hub]) )
+                    new_line=new_line.replace("X_SHROUD", ", ".join([str(s) for s in X_shroud]))
+                    new_line=new_line.replace("Z_SHROUD",", ".join([str(s) for s in Z_shroud]))
+                    print(new_line,end="")
+                
+            
+                X_te = np.transpose(self.X_TE[n_start:n_end, i])
+                #os.system("sed -i 's/X_TE/" + ", ".join([str(s) for s in X_te]) + "/g' Bladerow_" + str(i + 1) + ".cfg")
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                    print (line.replace("X_TE", ", ".join([str(s) for s in X_te])),end="")
+
+                for n in range(6):
+                    # os.system("sed -i 's/T"+str(n+1)+"/"+", ".join([str(T[n, i]) for j in range(n_sec)]) +"/g' Bladerow_" + str(i + 1) + ".cfg")
+                    for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                        print (line.replace("T"+str(n+1), ", ".join([str(T[n, i]) for j in range(n_sec)])),end="")
+
+                for line in fileinput.input(template_dir +"\\Bladerow_"+str(i+1) + "_BFM.cfg", inplace=True):
+                    new_line=line.replace("D1", ", ".join([str(D1[i]) for j in range(n_sec)]))
+                    new_line=new_line.replace("D2",", ".join([str(D2[i]) for j in range(n_sec)]) )
+                    new_line=new_line.replace("R_LE", ", ".join([str(R_LE[i]) for j in range(n_sec)]))
+                    new_line=new_line.replace("R_TE",", ".join([str(R_TE[i]) for j in range(n_sec)]))
+                    new_line=new_line.replace("THETA_IN",", ".join([str(d) for d in self.theta_in[n_start:n_end, i]]))
+                    new_line=new_line.replace("THETA_OUT",", ".join([str(d) for d in self.theta_out[n_start:n_end, i]]))
+                    print(new_line,end="")

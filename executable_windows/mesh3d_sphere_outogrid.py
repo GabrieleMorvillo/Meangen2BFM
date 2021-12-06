@@ -166,28 +166,20 @@ class ICEM3D_sphere:
         
          # Seed the edges in radial direction
         n_radial = round(self.n_point*self.length_rad[0]/self.length_hub[0])
-        #  ic_hex_set_mesh 181 221 n 40 h1rel 0.0141172916367 h2rel 0.000282344703355 r1 1.2 r2 1.2 lmax 1e+10 exp2 copy_to_parallel unlocked
-        #  ic_hex_set_mesh 223 90 n 40 h1rel 0.0141172351677 h2rel 0.000282344703355 r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked
         f.write("ic_hex_set_mesh 181 26 n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
-        # for i in range(0,3):
-        #     f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][0])+" "+str(self.nodes_mid[i][0])+" n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform\n")
-        #     f.write("ic_hex_set_mesh "+str(self.nodes_ogrid[i][0])+" "+str(self.nodes_mid[i][1])+" n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform\n")
-        #     f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][1])+" "+str(self.nodes_ogrid[i][1])+" n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform\n")
-        # for k in range(2,7):
-        #     for i in range(0,3):
-        #         f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][k])+" "+str(self.nodes_mid[i][k])+" n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2\n")
-        #         f.write("ic_hex_set_mesh "+str(self.nodes_hub[i][k])+" "+str(self.nodes_mid[i][k])+" n "+str(n_radial)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 exp2\n")
         f.write("ic_hex_set_mesh 22 181  n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
 
 
         # Seed the edges in axial direction
-        f.write("ic_hex_set_mesh 26 74 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-        f.write("ic_hex_set_mesh 74 90 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-        f.write("ic_hex_set_mesh 90 106 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-        f.write("ic_hex_set_mesh 106 122 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-        f.write("ic_hex_set_mesh 122 138 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-        f.write("ic_hex_set_mesh 138 154 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-        f.write("ic_hex_set_mesh 154 42 n "+str(20)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        R_LE = self.M.Z_LE
+        # self.coords_hub[0,1]-0.1*R_LE[0,0]
+        f.write("ic_hex_set_mesh 26 74 n "+str(round(abs((self.coords_hub[0,1]-0.1*R_LE[0,0]-self.coords_hub[0,0])/0.05)))+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 74 90 n "+str(round(abs((self.coords_hub[0,2]+0.1*R_LE[0,0]-self.coords_hub[0,1])/0.05)))+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 90 106 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/(0.1*R_LE[0,0]))+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 106 122 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 122 138 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 138 154 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[5])+" h2rel "+str(self.BL_thick/self.length_hub[5])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        f.write("ic_hex_set_mesh 154 42 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[6])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
 
 
         # Seed the edges in ogrid

@@ -1,8 +1,16 @@
 # import gmsh
 import numpy as np
 import os
+import shutil
 
 
+
+
+def line_prepender(filename, line):
+    with open(filename, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(line.rstrip('\r\n') + '\n' + content)
 
 # Class capable of generating a 3D mesh suitable for axisymmetric BFM analysis in SU2.
 class ICEM3D:
@@ -25,6 +33,8 @@ class ICEM3D:
     Rev =           None  # Revolution class.
 
 
+
+
     def __init__(self, Meangen, IN):
         # Storing Meangen class.
         self.M = Meangen
@@ -32,7 +42,7 @@ class ICEM3D:
         # Reading mesh parameters from input file.
 
         #self.wedge = IN["WEDGE"][0]     # Importing mesh wedge angle
-        self.wedge = -30
+        self.wedge = 1
         self.n_sec = int(IN["SECTIONS_PER_DEGREE"][0]) * self.wedge     # Calculating number of tangential nodes
         self.n_point = int(IN["AXIAL_POINTS"][0])       # Importing axial node count
         self.inlet_fac = IN["INLET_FACTOR"][0]          # Importing inlet cell size factor
@@ -48,6 +58,8 @@ class ICEM3D:
         # gmsh.option.setNumber("General.Terminal", 1)
         # self.model.add("3DBFM")
         DIR = os.getcwd() 
+        if os.path.isdir("MESHOutput"):
+            shutil.rmtree(DIR+"\\MESHOutput")
         if not os.path.isdir("MESHOutput"):
             os.mkdir(DIR + "\\MESHOutput")
             os.mkdir(DIR + "\\MESHOutput\\STAGE_BFM")
@@ -86,20 +98,23 @@ class ICEM3D:
         # Revolving radial lines around rotation axis to create inlet and outlet.
         self.makeInOut()
 
-        # # Setting names to boundaries.
-        # self.nameBoundaries()
+        # Setting names to boundaries.
+        self.nameBoundaries()
 
-        # # Fix points that were overwritten by ICEM (GEOM problem is not fixable)
-        # self.fixPoints()
+        # Fix points that were overwritten by ICEM (GEOM problem is not fixable)
+        self.fixPoints()
 
-        # # Make the blocks
-        # self.blocking()
+        # Make the blocks
+        self.blocking()
 
-        # # Creating 3D mesh.
-        # self.mesh()
+        # Creating 3D mesh.
+        self.mesh()
         
-        # # Save mesh to ANSYS CFX input file
-        # self.savemesh()
+        # Save mesh to ANSYS CFX input file
+        self.savemesh()
+
+        # Modify the bladerow .crv file for Turbogrid according to the ICEM file to represent the displaced inlet and outlet
+        self.turbofix()
 
 
         os.system("copy ICEM_input.txt " + DIRMESH +"\\ICEM_input.rpl")
@@ -140,26 +155,56 @@ class ICEM3D:
     #     gmsh.view.addListDataString(v, [i for i in perio_2_coords], ["periodic_2"],
     #                                 ["Align", "Center", "Font", "Helvetica"])
     #     gmsh.view.addListDataString(v, [i for i in perio_1_coords], ["periodic_1"], ["Align", "Center", "Font", "Helvetica"])
-
-    #     # Running the GMesh GUI
-    #     gmsh.fltk.run()
-
-    # def makePerio(self):
-    #     # This function modifies the mesh to be periodic through SU2_PERIO.
-    #     # Creating SU2_PERIO configuration file.
-    #     file = open("createPerio.cfg", "w+")
-
-    #     # Writing periodic boundary command and specifying wedge angle.
-    #     file.write("MARKER_PERIODIC= (periodic_1, periodic_2, 0.0, 0.0, 0.0, 0.0, 0.0, " + str(
-    #         float(self.wedge)) + ", 0.0, 0.0, 0.0)\n")
-    #     file.write("MESH_FILENAME= "+self.fileName+"\n")
-    #     file.write("MESH_FORMAT= SU2\n")
-    #     file.write("MESH_OUT_FILENAME= "+self.fileName[:-4]+"_perio.su2\n")
-    #     file.close()
-
-    #     # Executing SU2_PERIO to create periodic mesh and storing output in output file.
-    #     os.system("SU2_PERIO createPerio.cfg > SU2_PERIO.out")
     
+    
+    
+
+    def turbofix(self):
+        # Function to modify the .crv file used for Turbogrid mesh. Here the function adds the inlet and outlet
+        # points to the blade geometry to match the BFM mesh in ICEM
+        for i in range(1,3):
+            DIR = os.getcwd()
+            DIRTURBO = DIR + "\\Stage_1\\Bladerow_"+str(i)+"\\output\\mesh_files"
+                
+            # Modify the hub
+            filename1=DIRTURBO+"\\hub.crv"
+            file1 = open(filename1, 'r')
+            Lines = file1.readlines()
+
+            if i==1:
+                Lines_first=Lines[0].split()
+                file1.close()
+                line_prepender(filename1, Lines_first[0]+" "+Lines_first[1]+" "+str(self.coords_hub[0,0]))
+                print("The mid channel between rows is at "+str((self.coords_hub[0,3]+self.coords_hub[0,2])/2))
+            
+            if i==2:       
+                Lines_last=Lines[-1].split()
+                file1.close()
+                f = open(filename1, "a")
+                f.write(Lines_last[0]+" "+Lines_last[1]+" "+str(self.coords_hub[0,-1]))
+                f.close()
+
+
+            # Modify the shroud
+            filename2=DIRTURBO+"\\shroud.crv"
+            file2 = open(filename2, 'r')
+            Lines = file2.readlines()
+
+            if i==1:
+                Lines_first=Lines[0].split()
+                file2.close()
+                line_prepender(filename2, Lines_first[0]+" "+Lines_first[1]+" "+str(self.coords_shroud[0,0]))
+               
+            if i==2:
+                Lines_last=Lines[-1].split()
+                file2.close()
+                f = open(filename2, "a")
+                f.write(Lines_last[0]+" "+Lines_last[1]+" "+str(self.coords_shroud[0,-1]))
+                f.close()
+
+    
+
+
     def savemesh(self):
         DIR = os.getcwd()
         DIRMESH = DIR + "\\MESHOutput\\STAGE_BFM"
@@ -178,22 +223,23 @@ class ICEM3D:
         f.write("ic_boco_solver\n")
         f.write("ic_boco_solver CGNS\n")
         f.write("ic_solution_set_solver CGNS 1\n")
-        f.write("ic_boco_save {" + DIRMESH +"\\ICEM_MESH.fbc}\n")
-        f.write("ic_boco_save_atr {" + DIRMESH +"\\ICEM_MESH.atr}\n")
+        f.write("ic_boco_save {" + DIRMESH +"\\FAN_MESH.fbc}\n")
+        f.write("ic_boco_save_atr {" + DIRMESH +"\\FAN_MESH.atr}\n")
         f.write("ic_delete_empty_parts\n")
-        f.write("ic_save_tetin project1.tin 0 0 {} {} 0 0 1\n")
+        f.write("ic_save_tetin FAN_MESH.tin 0 0 {} {} 0 0 1\n")
         f.write("ic_uns_check_duplicate_numbers\n")
-        f.write("ic_save_unstruct project1.uns 1 {} {} {}\n")
+        f.write("ic_save_unstruct FAN_MESH.uns 1 {} {} {}\n")
         f.write("ic_uns_set_modified 1\n")
-        f.write("ic_hex_save_blocking project1.blk\n")
+        f.write("ic_hex_save_blocking FAN_MESH.blk\n")
         f.write("ic_boco_solver\n")
         f.write("ic_boco_solver CGNS\n")
         f.write("ic_solution_set_solver CGNS 1\n")
-        f.write("ic_boco_save project1.fbc\n")
-        f.write("ic_boco_save_atr project1.atr\n")
-        f.write("ic_save_project_file "+DIRMESH+"/project1.prj {array\ set\ file_name\ \{ {    catia_dir .} {    parts_dir .} {    domain_loaded 0} {    cart_file_loaded 0} {    cart_file {}} {    domain_saved project1.uns} {    archive {}} {    med_replay {}} {    topology_dir .} {    ugparts_dir .} {    icons {{$env(ICEM_ACN)/lib/ai_env/icons} {$env(ICEM_ACN)/lib/va/EZCAD/icons} {$env(ICEM_ACN)/lib/icons} {$env(ICEM_ACN)/lib/va/CABIN/icons}}} {    tetin project1.tin} {    family_boco project1.fbc} {    iges_dir .} {    solver_params_loaded 0} {    attributes_loaded 0} {    project_lock {}} {    attributes project1.atr} {    domain project1.uns} {    domains_dir .} {    settings_loaded 0} {    settings project1.prj} {    blocking project1.blk} {    hexa_replay {}} {    transfer_dir .} {    mesh_dir .} {    family_topo {}} {    gemsparts_dir .} {    family_boco_loaded 0} {    tetin_loaded 0} {    project_dir .} {    topo_mulcad_out {}} {    solver_params {}} \} array\ set\ options\ \{ {    expert 1} {    remote_path {}} {    tree_disp_quad 2} {    tree_disp_pyra 0} {    evaluate_diagnostic 0} {    histo_show_default 1} {    select_toggle_corners 0} {    remove_all 0} {    keep_existing_file_names 0} {    record_journal 0} {    edit_wait 0} {    face_mode all} {    select_mode all} {    med_save_emergency_tetin 1} {    user_name GMrx1} {    diag_which all} {    uns_warn_if_display 500000} {    bubble_delay 1000} {    external_num 1} {    tree_disp_tri 2} {    apply_all 0} {    default_solver {ANSYS Fluent}} {    temporary_directory {}} {    flood_select_angle 0} {    home_after_load 1} {    project_active 0} {    histo_color_by_quality_default 1} {    undo_logging 1} {    tree_disp_hexa 0} {    histo_solid_default 1} {    host_name LAPTOP-1G7TMHD3} {    xhidden_full 1} {    replay_internal_editor 1} {    editor notepad} {    mouse_color orange} {    clear_undo 1} {    remote_acn {}} {    remote_sh csh} {    tree_disp_penta 0} {    n_processors 1} {    remote_host {}} {    save_to_new 0} {    quality_info Quality} {    tree_disp_node 0} {    med_save_emergency_mesh 1} {    redtext_color red} {    tree_disp_line 0} {    select_edge_mode 0} {    use_dlremote 0} {    max_mesh_map_size 1024} {    show_tris 1} {    remote_user {}} {    enable_idle 0} {    auto_save_views 1} {    max_cad_map_size 512} {    display_origin 0} {    uns_warn_user_if_display 1000000} {    detail_info 0} {    win_java_help 0} {    show_factor 1} {    boundary_mode all} {    clean_up_tmp_files 1} {    auto_fix_uncovered_faces 1} {    med_save_emergency_blocking 1} {    max_binary_tetin 0} {    tree_disp_tetra 0} \} array\ set\ disp_options\ \{ {    uns_dualmesh 0} {    uns_warn_if_display 500000} {    uns_normals_colored 0} {    uns_icons 0} {    uns_locked_elements 0} {    uns_shrink_npos 0} {    uns_node_type None} {    uns_icons_normals_vol 0} {    uns_bcfield 0} {    backup Wire} {    uns_nodes 0} {    uns_only_edges 0} {    uns_surf_bounds 0} {    uns_wide_lines 0} {    uns_vol_bounds 0} {    uns_displ_orient Triad} {    uns_orientation 0} {    uns_directions 0} {    uns_thickness 0} {    uns_shell_diagnostic 0} {    uns_normals 0} {    uns_couplings 0} {    uns_periodicity 0} {    uns_single_surfaces 0} {    uns_midside_nodes 1} {    uns_shrink 100} {    uns_multiple_surfaces 0} {    uns_no_inner 0} {    uns_enums 0} {    uns_disp Wire} {    uns_bcfield_name {}} {    uns_color_by_quality 0} {    uns_changes 0} {    uns_cut_delay_count 1000} \} {set icon_size1 24} {set icon_size2 35} {set thickness_defined 0} {set solver_type 1} {set solver_setup -1} array\ set\ prism_values\ \{ {    n_triangle_smoothing_steps 5} {    min_smoothing_steps 6} {    first_layer_smoothing_steps 1} {    new_volume {}} {    height {}} {    prism_height_limit {}} {    interpolate_heights 0} {    n_tetra_smoothing_steps 10} {    do_checks {}} {    delete_standalone 1} {    ortho_weight 0.50} {    max_aspect_ratio {}} {    ratio_max {}} {    incremental_write 0} {    total_height {}} {    use_prism_v10 0} {    intermediate_write 1} {    delete_base_triangles {}} {    ratio_multiplier {}} {    verbosity_level 1} {    refine_prism_boundary 1} {    max_size_ratio {}} {    triangle_quality {}} {    max_prism_angle 180} {    tetra_smooth_limit 0.3} {    max_jump_factor 5} {    use_existing_quad_layers 0} {    layers 3} {    fillet 0.10} {    into_orphan 0} {    init_dir_from_prev {}} {    blayer_2d 0} {    do_not_allow_sticking {}} {    top_family {}} {    law exponential} {    min_smoothing_val 0.1} {    auto_reduction 0} {    stop_columns 1} {    stair_step 1} {    smoothing_steps 12} {    side_family {}} {    min_prism_quality 0.01} {    ratio 1.2} \} {set aie_current_flavor {}} array\ set\ vid_options\ \{ {    wb_import_mat_points 0} {    wb_NS_to_subset 0} {    wb_import_surface_bodies 1} {    wb_import_cad_att_pre {SDFEA;DDM}} {    wb_import_mix_res_line 0} {    wb_import_tritol 0.001} {    auxiliary 1} {    wb_import_cad_att_trans 1} {    wb_import_mix_res -1} {    wb_import_mix_res_surface 0} {    show_name 0} {    wb_import_solid_bodies 1} {    wb_import_delete_solids 0} {    do_intersect_self_part 1} {    wb_import_mix_res_solid 0} {    wb_import_save_pmdb {}} {    inherit 0} {    default_part GEOM} {    new_srf_topo 0} {    wb_import_associativity_model_name {}} {    DelPerFlag 0} {    show_item_name 0} {    wb_import_line_bodies 0} {    wb_import_save_partfile 0} {    composite_tolerance 1.0} {    wb_NS_to_entity_parts 0} {    wb_import_en_sym_proc 1} {    wb_import_sel_proc 1} {    wb_import_work_points 0} {    wb_import_reference_key 0} {    wb_import_mix_res_point 0} {    wb_import_pluginname {}} {    wb_NS_only 0} {    wb_import_geom 0} {    wb_import_create_solids 0} {    wb_import_refresh_pmdb 0} {    wb_import_lcs 0} {    wb_import_sel_pre {}} {    wb_import_scale_geo Default} {    wb_import_load_pmdb {}} {    replace 0} {    wb_import_cad_associativity 0} {    same_pnt_tol 1e-4} {    tdv_axes 1} {    wb_import_mesh 0} {    vid_mode 0} {    DelBlkPerFlag 0} \} {set savedTreeVisibility {geomNode 1 geom_subsetNode 2 geomPointNode 0 geomCurveNode 2 geomSurfNode 2 meshNode 1 mesh_subsetNode 2 meshPointNode 0 meshLineNode 2 meshShellNode 2 meshQuadNode 2 meshVolumeNode 0 meshHexaNode 0 blockingNode 1 block_subsetNode 2 block_vertNode 0 block_edgeNode 2 block_faceNode 0 block_blockNode 0 block_meshNode 0 topoNode 2 topo-root 2 partNode 2 part-GEOM 2 part-HUB_WALL 2 part-INLET 2 part-LEFT_SYM 2 part-OUTLET 2 part-RIGHT_SYM 2 part-SHROUD_WALL 2 part-SOLID 2 part-VORFN 0}} {set last_view {rot {0.0225677294222 -0.946480402031 -0.0425933790289 -0.319141583359} scale {857.662704449 857.662704449 857.662704449} center {0 0 0} pos {173.289871722 -283.900428141 0}}} array\ set\ cut_info\ \{ {    active 0} {    whole 1} \} array\ set\ hex_option\ \{ {    default_bunching_ratio 2.0} {    floating_grid 0} {    project_to_topo 0} {    n_tetra_smoothing_steps 20} {    sketching_mode 0} {    trfDeg 1} {    wr_hexa7 0} {    smooth_ogrid 0} {    find_worst 1-3} {    hexa_verbose_mode 0} {    old_eparams 0} {    uns_face_mesh_method uniform_quad} {    multigrid_level 0} {    uns_face_mesh one_tri} {    check_blck 0} {    proj_limit 0} {    check_inv 0} {    project_bspline 0} {    hexa_update_mode 1} {    default_bunching_law BiGeometric} {    worse_criterion Quality} \} array\ set\ saved_views\ \{ {    views {}} \}} {ICEM CFD}\n")
-        f.write("ic_write_file domain_list {"+DIRMESH+"/project1.uns\n}\n")
-        f.write("ic_exec {C:/Program Files/ANSYS Inc/v195/icemcfd/win64_amd/icemcfd/output-interfaces/cgns} -b project1.fbc -dom_list domain_list -unstr -scale 1.0 ./project1.cgns\n")
+        f.write("ic_boco_save FAN_MESH.fbc\n")
+        f.write("ic_boco_save_atr FAN_MESH.atr\n")
+        f.write("ic_save_project_file "+DIRMESH+"/FAN_MESH.prj {array\ set\ file_name\ \{ {    catia_dir .} {    parts_dir .} {    domain_loaded 0} {    cart_file_loaded 0} {    cart_file {}} {    domain_saved FAN_MESH.uns} {    archive {}} {    med_replay {}} {    topology_dir .} {    ugparts_dir .} {    icons {{$env(ICEM_ACN)/lib/ai_env/icons} {$env(ICEM_ACN)/lib/va/EZCAD/icons} {$env(ICEM_ACN)/lib/icons} {$env(ICEM_ACN)/lib/va/CABIN/icons}}} {    tetin FAN_MESH.tin} {    family_boco FAN_MESH.fbc} {    iges_dir .} {    solver_params_loaded 0} {    attributes_loaded 0} {    project_lock {}} {    attributes FAN_MESH.atr} {    domain FAN_MESH.uns} {    domains_dir .} {    settings_loaded 0} {    settings FAN_MESH.prj} {    blocking FAN_MESH.blk} {    hexa_replay {}} {    transfer_dir .} {    mesh_dir .} {    family_topo {}} {    gemsparts_dir .} {    family_boco_loaded 0} {    tetin_loaded 0} {    project_dir .} {    topo_mulcad_out {}} {    solver_params {}} \} array\ set\ options\ \{ {    expert 1} {    remote_path {}} {    tree_disp_quad 2} {    tree_disp_pyra 0} {    evaluate_diagnostic 0} {    histo_show_default 1} {    select_toggle_corners 0} {    remove_all 0} {    keep_existing_file_names 0} {    record_journal 0} {    edit_wait 0} {    face_mode all} {    select_mode all} {    med_save_emergency_tetin 1} {    user_name GMrx1} {    diag_which all} {    uns_warn_if_display 500000} {    bubble_delay 1000} {    external_num 1} {    tree_disp_tri 2} {    apply_all 0} {    default_solver {ANSYS Fluent}} {    temporary_directory {}} {    flood_select_angle 0} {    home_after_load 1} {    project_active 0} {    histo_color_by_quality_default 1} {    undo_logging 1} {    tree_disp_hexa 0} {    histo_solid_default 1} {    host_name LAPTOP-1G7TMHD3} {    xhidden_full 1} {    replay_internal_editor 1} {    editor notepad} {    mouse_color orange} {    clear_undo 1} {    remote_acn {}} {    remote_sh csh} {    tree_disp_penta 0} {    n_processors 1} {    remote_host {}} {    save_to_new 0} {    quality_info Quality} {    tree_disp_node 0} {    med_save_emergency_mesh 1} {    redtext_color red} {    tree_disp_line 0} {    select_edge_mode 0} {    use_dlremote 0} {    max_mesh_map_size 1024} {    show_tris 1} {    remote_user {}} {    enable_idle 0} {    auto_save_views 1} {    max_cad_map_size 512} {    display_origin 0} {    uns_warn_user_if_display 1000000} {    detail_info 0} {    win_java_help 0} {    show_factor 1} {    boundary_mode all} {    clean_up_tmp_files 1} {    auto_fix_uncovered_faces 1} {    med_save_emergency_blocking 1} {    max_binary_tetin 0} {    tree_disp_tetra 0} \} array\ set\ disp_options\ \{ {    uns_dualmesh 0} {    uns_warn_if_display 500000} {    uns_normals_colored 0} {    uns_icons 0} {    uns_locked_elements 0} {    uns_shrink_npos 0} {    uns_node_type None} {    uns_icons_normals_vol 0} {    uns_bcfield 0} {    backup Wire} {    uns_nodes 0} {    uns_only_edges 0} {    uns_surf_bounds 0} {    uns_wide_lines 0} {    uns_vol_bounds 0} {    uns_displ_orient Triad} {    uns_orientation 0} {    uns_directions 0} {    uns_thickness 0} {    uns_shell_diagnostic 0} {    uns_normals 0} {    uns_couplings 0} {    uns_periodicity 0} {    uns_single_surfaces 0} {    uns_midside_nodes 1} {    uns_shrink 100} {    uns_multiple_surfaces 0} {    uns_no_inner 0} {    uns_enums 0} {    uns_disp Wire} {    uns_bcfield_name {}} {    uns_color_by_quality 0} {    uns_changes 0} {    uns_cut_delay_count 1000} \} {set icon_size1 24} {set icon_size2 35} {set thickness_defined 0} {set solver_type 1} {set solver_setup -1} array\ set\ prism_values\ \{ {    n_triangle_smoothing_steps 5} {    min_smoothing_steps 6} {    first_layer_smoothing_steps 1} {    new_volume {}} {    height {}} {    prism_height_limit {}} {    interpolate_heights 0} {    n_tetra_smoothing_steps 10} {    do_checks {}} {    delete_standalone 1} {    ortho_weight 0.50} {    max_aspect_ratio {}} {    ratio_max {}} {    incremental_write 0} {    total_height {}} {    use_prism_v10 0} {    intermediate_write 1} {    delete_base_triangles {}} {    ratio_multiplier {}} {    verbosity_level 1} {    refine_prism_boundary 1} {    max_size_ratio {}} {    triangle_quality {}} {    max_prism_angle 180} {    tetra_smooth_limit 0.3} {    max_jump_factor 5} {    use_existing_quad_layers 0} {    layers 3} {    fillet 0.10} {    into_orphan 0} {    init_dir_from_prev {}} {    blayer_2d 0} {    do_not_allow_sticking {}} {    top_family {}} {    law exponential} {    min_smoothing_val 0.1} {    auto_reduction 0} {    stop_columns 1} {    stair_step 1} {    smoothing_steps 12} {    side_family {}} {    min_prism_quality 0.01} {    ratio 1.2} \} {set aie_current_flavor {}} array\ set\ vid_options\ \{ {    wb_import_mat_points 0} {    wb_NS_to_subset 0} {    wb_import_surface_bodies 1} {    wb_import_cad_att_pre {SDFEA;DDM}} {    wb_import_mix_res_line 0} {    wb_import_tritol 0.001} {    auxiliary 1} {    wb_import_cad_att_trans 1} {    wb_import_mix_res -1} {    wb_import_mix_res_surface 0} {    show_name 0} {    wb_import_solid_bodies 1} {    wb_import_delete_solids 0} {    do_intersect_self_part 1} {    wb_import_mix_res_solid 0} {    wb_import_save_pmdb {}} {    inherit 0} {    default_part GEOM} {    new_srf_topo 0} {    wb_import_associativity_model_name {}} {    DelPerFlag 0} {    show_item_name 0} {    wb_import_line_bodies 0} {    wb_import_save_partfile 0} {    composite_tolerance 1.0} {    wb_NS_to_entity_parts 0} {    wb_import_en_sym_proc 1} {    wb_import_sel_proc 1} {    wb_import_work_points 0} {    wb_import_reference_key 0} {    wb_import_mix_res_point 0} {    wb_import_pluginname {}} {    wb_NS_only 0} {    wb_import_geom 0} {    wb_import_create_solids 0} {    wb_import_refresh_pmdb 0} {    wb_import_lcs 0} {    wb_import_sel_pre {}} {    wb_import_scale_geo Default} {    wb_import_load_pmdb {}} {    replace 0} {    wb_import_cad_associativity 0} {    same_pnt_tol 1e-4} {    tdv_axes 1} {    wb_import_mesh 0} {    vid_mode 0} {    DelBlkPerFlag 0} \} {set savedTreeVisibility {geomNode 1 geom_subsetNode 2 geomPointNode 0 geomCurveNode 2 geomSurfNode 2 meshNode 1 mesh_subsetNode 2 meshPointNode 0 meshLineNode 2 meshShellNode 2 meshQuadNode 2 meshVolumeNode 0 meshHexaNode 0 blockingNode 1 block_subsetNode 2 block_vertNode 0 block_edgeNode 2 block_faceNode 0 block_blockNode 0 block_meshNode 0 topoNode 2 topo-root 2 partNode 2 part-GEOM 2 part-HUB_WALL 2 part-INLET 2 part-LEFT_SYM 2 part-OUTLET 2 part-RIGHT_SYM 2 part-SHROUD_WALL 2 part-SOLID 2 part-VORFN 0}} {set last_view {rot {0.0225677294222 -0.946480402031 -0.0425933790289 -0.319141583359} scale {857.662704449 857.662704449 857.662704449} center {0 0 0} pos {173.289871722 -283.900428141 0}}} array\ set\ cut_info\ \{ {    active 0} {    whole 1} \} array\ set\ hex_option\ \{ {    default_bunching_ratio 2.0} {    floating_grid 0} {    project_to_topo 0} {    n_tetra_smoothing_steps 20} {    sketching_mode 0} {    trfDeg 1} {    wr_hexa7 0} {    smooth_ogrid 0} {    find_worst 1-3} {    hexa_verbose_mode 0} {    old_eparams 0} {    uns_face_mesh_method uniform_quad} {    multigrid_level 0} {    uns_face_mesh one_tri} {    check_blck 0} {    proj_limit 0} {    check_inv 0} {    project_bspline 0} {    hexa_update_mode 1} {    default_bunching_law BiGeometric} {    worse_criterion Quality} \} array\ set\ saved_views\ \{ {    views {}} \}} {ICEM CFD}\n")
+        f.write("ic_write_file domain_list {"+DIRMESH+"/FAN_MESH.uns\n}\n")
+        # f.write("ic_write_file domain_list {"+DIRMESH+"/project1.uns}\n")
+        f.write("ic_exec {C:/Program Files/ANSYS Inc/v195/icemcfd/win64_amd/icemcfd/output-interfaces/cgns} -b FAN_MESH.fbc -dom_list domain_list -unstr -scale 1.0 ./FAN_MESH.cgns\n")
         f.write("exit\n")
 
 
@@ -206,17 +252,22 @@ class ICEM3D:
          f = open("ICEM_input.txt", "a")
 
          # Seed the edges in axial direction
-         f.write("ic_hex_set_mesh 37 70 n "+str(self.n_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 70 86 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[1])+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 86 102 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[2])+" h2rel "+str(self.BL_thick/self.length_hub[2])+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 102 118 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
-         f.write("ic_hex_set_mesh 118 38 n "+str(self.n_point)+" h1rel "+str(self.BL_thick/self.length_hub[4])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
+         axial_point=2*self.n_point
+         f.write("ic_hex_set_mesh 25 70 n "+str(axial_point)+" h1rel "+str(0.05)+" h2rel "+str(self.BL_thick/self.length_hub[0])+" r1 1.2 r2 1.2 lmax 0 exp2 copy_to_parallel unlocked\n")
+         f.write("ic_hex_set_mesh 70 86 n "+str(axial_point)+" h1rel "+str(self.BL_thick/self.length_hub[1])+" h2rel "+str(self.BL_thick/self.length_hub[1])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+         f.write("ic_hex_set_mesh 86 102 n "+str(axial_point)+" h1rel "+str(self.BL_thick/self.length_hub[2])+" h2rel "+str(self.BL_thick/self.length_hub[2])+" r1 1.2 r2 1.2 lmax 0 default copy_to_parallel unlocked\n")
+         f.write("ic_hex_set_mesh 102 118 n "+str(axial_point)+" h1rel "+str(self.BL_thick/self.length_hub[3])+" h2rel "+str(self.BL_thick/self.length_hub[3])+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+         f.write("ic_hex_set_mesh 118 41 n "+str(axial_point)+" h1rel "+str(self.BL_thick/self.length_hub[4])+" h2rel "+str(0.05)+" r1 1.2 r2 1.2 lmax 0 exp1 copy_to_parallel unlocked\n")
         
-         # Seed the edges in radial direction
-         n_radial = round(self.n_point*self.length_rad[0]/self.length_hub[0])
-         f.write("ic_hex_set_mesh 37 41 n "+str(n_radial)+" h1rel "+str(0.01)+" h2rel "+str(0.01)+" r1 1.2 r2 1.2 lmax 0 uniform copy_to_parallel unlocked\n")
+         # Seed the edges in radial direction            ATTENTION!!!! I had to enlarge BL_thick radially to avoid mesh bad quality due to small angle (skew cells???)
+         R_LE = self.M.Z_LE
+         f.write("ic_hex_set_mesh 21 25 n "+str(axial_point)+" h1rel "+str(2*self.BL_thick/(R_LE[-1, 0]- R_LE[0, 0]))+" h2rel "+str(2*self.BL_thick/(R_LE[-1, 0]- R_LE[0, 0]))+" r1 1.2 r2 1.2 lmax 0 biexponential copy_to_parallel unlocked\n")
+        
 
-
+         # Fix inverted blocks determinant
+         f.write("ic_hex_mark_blocks unmark\n")
+         f.write("ic_hex_mark_blocks inverted\n")
+         f.write("ic_hex_invert_super_block marked\n")
          f.write("ic_hex_create_mesh GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID proj 2 dim_to_mesh 3\n")
          f.close()
 
@@ -259,16 +310,16 @@ class ICEM3D:
         f.write("ic_hex_error_messages off_minor\n")
 
         # Split block
-        f.write("ic_hex_split_grid 41 42 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 74 42 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 90 42 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
-        f.write("ic_hex_split_grid 106 42 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 25 41 pnt."+str(self.points_shroud[1])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 70 41 pnt."+str(self.points_shroud[2])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 86 41 pnt."+str(self.points_shroud[3])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
+        f.write("ic_hex_split_grid 102 41 pnt."+str(self.points_shroud[4])+" m GEOM RIGHT_SYM LEFT_SYM HUB_WALL SHROUD_WALL INLET OUTLET SOLID\n")
   
         # Assign nodes to vertices
-        nodes_hub = [37,70,86,102,118,38]
-        nodes_shroud = [41,74,90,106,122,42]
-        nodes_hub2 = [21,69,85,101,117,22]
-        nodes_shroud2 = [25,73,89,105,121,26] 
+        nodes_hub = [21,69,85,101,117,37]   
+        nodes_shroud = [25,70,86,102,118,41]
+        nodes_hub2 = [22,73,89,105,121,38]
+        nodes_shroud2 = [26,74,90,106,122,42] 
         for i in range(len(self.points_hub)):
             f.write("ic_hex_move_node "+str(nodes_hub[i])+" pnt." +str(self.points_hub[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_shroud[i])+" pnt." +str(self.points_shroud[i])+"\n")
@@ -295,10 +346,10 @@ class ICEM3D:
         f.write("ic_hex_mark_blocks unmark\n")
         
         # Assign splitted nodes to vertices
-        nodes_hub3 = [153,154,155,156,157,158]
-        nodes_shroud3 = [161,162,163,164,165,166]
-        nodes_hub23 = [129,130,131,132,133,134]
-        nodes_shroud23 = [137,138,139,140,141,142]
+        nodes_hub3 = [134,140,146,152,158,164]
+        nodes_hub23 = [135,141,147,153,159,165]
+        nodes_shroud3 = [136,142,148,154,160,166]
+        nodes_shroud23 = [137,143,149,155,161,167]
         for i in range(len(self.points_hub)):
             f.write("ic_hex_move_node "+str(nodes_hub3[i])+" pnt." +str(self.points_lines_wall_hub3[i])+"\n")
             f.write("ic_hex_move_node "+str(nodes_shroud3[i])+" pnt." +str(self.points_lines_wall_shroud3[i])+"\n")
@@ -316,7 +367,7 @@ class ICEM3D:
             f.write("ic_hex_set_edge_projection "+str(nodes_shroud23[i])+" "+str(nodes_shroud2[i])+" 0 1 crv."+str(self.lines_wall_shroud[i])+"\n")
         
         # Remove bottom blocks that are not needed
-        low_blocks=[36,39,42,45,48]
+        low_blocks=[36,41,44,47,50]
         for i in low_blocks:
             f.write("ic_hex_mark_blocks superblock "+str(i)+"\n")
             f.write("ic_hex_change_element_id VORFN\n")
@@ -461,7 +512,7 @@ class ICEM3D:
         i_surf = self.surfaces_count
         f = open("ICEM_input.txt", "a")
 
-        line_inlet= str(self.lines_rad[-1])
+        line_inlet= str(self.lines_rad[0])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
         f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+1) + " crv." + line_inlet + " pnt." + str(self.points_rot_axis[0]) + " {1 0 0} 0 " + str(-self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
@@ -469,7 +520,7 @@ class ICEM3D:
         f.write("ic_set_dormant_pickable curve 0 {}\n")
         inlet.append(i_surf+1)
 
-        line_outlet= str(self.lines_rad[0])
+        line_outlet= str(self.lines_rad[-1])
         f.write("ic_set_global geo_cad 0.0006 toler\n")
         f.write("ic_geo_cre_srf_rev GEOM srf." + str(i_surf+2) + " crv." + line_outlet + " pnt." + str(self.points_rot_axis[0]) + " {1 0 0} 0 " + str(-self.wedge) + " c 1\n")
         f.write("ic_set_global geo_cad 0.001 toler\n")
@@ -777,8 +828,8 @@ class ICEM3D:
         # The axial coordinates of the inlet and outlet are calculated here.
         # x_min = min(X_LE[:, 0] - 2*(X_TE[:, 0] - X_LE[:, 0]))
         # x_max = max(X_TE[:, -1] + 2*(X_TE[:, -1] - X_LE[:, -1]))
-        x_min = min(X_LE[:, 0] - 1.5*(R_LE[-1, 0] - R_LE[0, 0]))
-        x_max = max(X_TE[:, -1] + 1.5*(R_TE[-1, -1] - R_TE[0, -1]))
+        x_min = min(X_LE[:, 0] - 2*(R_LE[-1, 0] - R_LE[0, 0]))
+        x_max = max(X_TE[:, -1] + 2*(R_TE[-1, -1] - R_TE[0, -1]))
 
         # Each point has an identifier. This number is progressively updated with each point and stored in the
         # respective lists for the hub and shroud patches.

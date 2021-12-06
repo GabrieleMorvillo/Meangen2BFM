@@ -36,7 +36,7 @@ class writeBFMinput:
             # Looping over the two blade rows in each stage.
             for j in [1, 2]:
                # Opening the BFM input file of the current blade row.
-                with open(self.dir + "\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"\\output\\mesh_files/\\FM_input", "r") as file:
+                with open(self.dir + "\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"_BFM\\output\\mesh_files\\BFM_input", "r") as file:
                     #Reading axial point and section count information from the first line.
                     first_line = file.readline().split('\t', 2)
                     first_line[-1] = first_line[-1].strip()
@@ -88,7 +88,7 @@ class writeBFMinput:
             for j in [1, 2]:
                 self.BFMfile.write("<blade row>\n")
                 self.BFMfile.write("<tang section>\n")
-                with open(self.dir + "\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"\\output\\mesh_files\\BFM_input.drg", "r") as file:
+                with open(self.dir + "\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"_BFM\\output\\mesh_files\\BFM_input.drg", "r") as file:
                     # Skipping the first line in the blade row file.
                     lines = file.readlines()
                     start_line = np.where(np.array(lines) == "<blade row>\n")[0]

@@ -31,9 +31,9 @@ from Meangen2Parablade import Meangen2Parablade
 from Parablade2UMG2 import WriteUMG, writeStageMesh_BFM, writeStageMesh_Blade
 from SU2Writer import writeBFMinput, ReadUserInput, writeSU2input
 from Mesh3D import Gmesh3D, Gmesh2D, FullAnnulus
-# from Mesh3D_ICEM import ICEM3D
+from Mesh3D_ICEM import ICEM3D
 # from Mesh3D_ICEM_spherefan import ICEM3D_sphere
-from mesh3d_sphere_outogrid import ICEM3D_sphere
+# from mesh3d_sphere_outogrid import ICEM3D_sphere
 from TURBO3D import TURBO
 from dataPlotter import axial_data_plotter
 # from ParaviewPost import AxialMachine
@@ -66,26 +66,32 @@ n_rows = 2*n_stage
 
 # Looping over the number of stages to create folders for each stage and respective bladerow.
 for i in range(n_stage):
-    if os.path.isdir("Stage_"+str(i+1)):
-        if os.path.isdir("Stage_"+str(i+1) + "\\Bladerow_1"):
-            #os.system("mv Bladerow_"+str(2*i + 1) + ".cfg" + " Stage_"+str(i+1)+"/Bladerow_1/Bladerow.cfg")
+    if os.path.isdir(DIR+"\\Stage_"+str(i+1)):
+        if os.path.isdir(DIR+"\\Stage_"+str(i+1) + "\\Bladerow_1"):
             shutil.move(DIR + "\\templates\\Bladerow_"+str(2*i + 1) + ".cfg", "Stage_"+str(i+1)+"\\Bladerow_1\\Bladerow.cfg")
         else:
-            #os.system("mkdir "+"Stage_"+str(i+1)+"/Bladerow_1")
-            os.mkdir("Stage_"+str(i+1)+"\\Bladerow_1")
-            #os.system("mv Bladerow_" + str(2 * i + 1) + ".cfg" + " Stage_" + str(i + 1) + "/Bladerow_1/Bladerow.cfg")
+            os.mkdir(DIR+"\\Stage_"+str(i+1)+"\\Bladerow_1")
             shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 1) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_1\\Bladerow.cfg")
-        if os.path.isdir("Stage_"+str(i+1) + "\\Bladerow_2"):
+        
+        if os.path.isdir(DIR+"\\Stage_"+str(i+1) + "\\Bladerow_1_BFM"):
+            shutil.move(DIR + "\\templates\\Bladerow_"+str(2*i + 1) + "_BFM.cfg", "Stage_"+str(i+1)+"\\Bladerow_1_BFM\\Bladerow.cfg")
+        else:
+            os.mkdir(DIR+"\\Stage_"+str(i+1)+"\\Bladerow_1_BFM")
+            shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 1) + "_BFM.cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_1_BFM\\Bladerow.cfg")
+        
+        if os.path.isdir(DIR+"\\Stage_"+str(i+1) + "\\Bladerow_2"):
             shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
         else:
-            #os.system("mkdir " + "Stage_" + str(i + 1) + "/Bladerow_2")
-            os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_2")
+            os.mkdir(DIR+"\\Stage_" + str(i + 1) + "\\Bladerow_2")
             shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
+        
     else:
-        os.mkdir("Stage_"+str(i+1))
-        os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_1")
+        os.mkdir(DIR+"\\Stage_"+str(i+1))
+        os.mkdir(DIR+"\\Stage_" + str(i + 1) + "\\Bladerow_1")
         shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 1) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_1\\Bladerow.cfg")
-        os.mkdir("Stage_" + str(i + 1) + "\\Bladerow_2")
+        os.mkdir(DIR+"\\Stage_" + str(i + 1) + "\\Bladerow_1_BFM")
+        shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 1) + "_BFM.cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_1_BFM\\Bladerow.cfg")
+        os.mkdir(DIR+"\\Stage_" + str(i + 1) + "\\Bladerow_2")
         shutil.move(DIR + "\\templates\\Bladerow_" + str(2 * i + 2) + ".cfg", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2\\Bladerow.cfg")
 
 
@@ -102,14 +108,15 @@ if IN["MESH_BLADE"] == 'YES':
 row = 1
 for i in range(n_stage):
     for j in [1, 2]:
+
         # Moving to current blade row directory.
         #b=os.getcwd()
         os.chdir(os.getcwd()+"\\Stage_"+str(i+1)+"\\Bladerow_"+str(j))
-        DIRROW=os.getcwd()
-        b=DIRROW+"\\Bladerow.cfg"
-        BLADE_HOME = os.getenv('BLADE_HOME')
-        BLADE = os.getenv('BLADE')
-        os.environ["parablade_infile"]=b
+        # DIRROW=os.getcwd()
+        # b=DIRROW+"\\Bladerow.cfg"
+        # BLADE_HOME = os.getenv('BLADE_HOME')
+        # BLADE = os.getenv('BLADE')
+        # os.environ["parablade_infile"]=b
 
         # Checking for blade plot option.
         if IN['PLOT_BLADE'] == 'YES':
@@ -125,6 +132,8 @@ for i in range(n_stage):
         os.system("python -m MakeBlade Bladerow.cfg > Parablade.out")
         print("Done!")
 
+
+
         if IN["ADJOINT"] == 'YES':
             os.system("sed -i 's/GEOMETRY/SENSITIVITY/g' Bladerow.cfg")
             print("Getting sensitivities for blade row "+str(2*i + j))
@@ -134,23 +143,73 @@ for i in range(n_stage):
         #if IN['N_dim'][0] == 2:
             #WriteUMG(j, i+1, M, IN, bodyForce=BFM, blade=Blade)
 
+
+        # ------------ repeat the process for the rotor blade BFM geometry (no tip gap)
+
+        if os.path.isdir(DIR+"\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"_BFM"):
+             # Moving to current blade row directory.
+            #b=os.getcwd()
+            os.chdir(DIR+"\\Stage_"+str(i+1)+"\\Bladerow_"+str(j)+"_BFM")
+            # DIRROW=os.getcwd()
+            # b=DIRROW+"\\Bladerow.cfg"
+            # BLADE_HOME = os.getenv('BLADE_HOME')
+            # BLADE = os.getenv('BLADE')
+            # os.environ["parablade_infile"]=b
+
+            # Checking for blade plot option.
+            if IN['PLOT_BLADE'] == 'YES':
+                print("plotting blade")
+                #os.system("PlotBlade.py Bladerow.cfg > Parablade.out")
+                #os.system("PlotBlade.py "+DIRROW+"\\Bladerow.cfg > "+DIRROW+ "Output")
+                #os.system("python.exe PlotBlade.py "+DIRROW+"\\Bladerow.cfg")
+                os.system("python -m PlotBlade Bladerow.cfg > Parablade.out")
+
+
+            # Executing Parablade.
+            print("Running Parablade...")
+            os.system("python -m MakeBlade Bladerow.cfg > Parablade.out")
+            print("Done!")
+
+
+
+            if IN["ADJOINT"] == 'YES':
+                os.system("sed -i 's/GEOMETRY/SENSITIVITY/g' Bladerow.cfg")
+                print("Getting sensitivities for blade row "+str(2*i + j))
+                os.system("MakeBlade.py Bladerow.cfg")
+                print("Done!")
+            # In case the dimension number is 2, UMG2 input files will be written, depending on the mesh case option.
+            #if IN['N_dim'][0] == 2:
+                #WriteUMG(j, i+1, M, IN, bodyForce=BFM, blade=Blade)
+      
+
         # Updating row count.
         row += 1
         os.chdir(DIR)
+        
+for i in range(n_stage):
+    if not os.path.isdir(DIR+"\\Stage_"+str(i+1) + "\\Bladerow_2_BFM"):
+        # os.mkdir(DIR+"\\Stage_" + str(i + 1) + "\\Bladerow_2_BFM")
+        shutil.copytree(DIR + "\\Stage_"+ str(i + 1) +"\\Bladerow_2", DIR + "\\Stage_" + str(i + 1) + "\\Bladerow_2_BFM")
+
+
+
+
+
 
 # The individual 2D meshes are combined into a full machine mesh. In case the dimension number is 3 and a BFM mesh is
 # desired, a suitable 3D mesh will be written. This option is currently not yet available for physical blades.
 
 if BFM:
     # Writing BFM input file suitable for SU2 BFM analysis.
-    # print("Writing Body-force SU2 input file...", end='     ')
-    # writeBFMinput(M)
-    # print("Done!")
+    print("Writing Body-force SU2 input file...", end='     ')
+    writeBFMinput(M)
+    print("Done!")
 
     # Writing 3D BFM mesh or combining individual 2D blade row meshes depending on case dimension.
     if IN['N_dim'][0] == 3:
         print("Writing 3D BFM mesh:...")
-        ICEM3D_sphere(M,IN)
+        # ICEM3D_sphere(M,IN)
+        ICEM3D(M,IN)
         # ICEM3D(M,IN)
         # TURBO(M,IN,"inlet_duct")
         # TURBO(M,IN,"outlet_duct")

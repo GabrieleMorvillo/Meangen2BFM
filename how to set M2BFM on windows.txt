@@ -1,0 +1,34 @@
+
+
+> powershell profile location
+C:\Users\GMrx1\Documents\PowerShell
+
+
+
+
+> Download MSYS2 following the guide up to point 9)
+   https://masuday.github.io/fortran_tutorial/install_gfortran_windows.html
+
+> Install gfortran through MSYS2
+   https://packages.msys2.org/package/mingw-w64-x86_64-gcc-fortran
+
+> Install the package needed to compute meangen
+   https://packages.msys2.org/package/mingw-w64-x86_64-gcc-libgfortran
+
+> Add the folder containing the package (should be C:\msys64\mingw64\bin) to the system path variables
+   https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/
+
+> Run MSYS2 and change folder to the one where you downloaded meangen file.
+   N.B. It uses / instead of \:   cd /C/Users/...
+
+> Compile meangen .exe file
+   gfortran meangen-17.4.f -o meangen
+
+
+
+SHA tag represent the code for the associated commit.
+in order to see the latest SHA tag go to github repository --> tags --> select a version and click on notes 
+ --> you could find N commits each with his own SHA tag (in commits details) and/or the dot -o- that represent
+ the first creation of the repository (commit n0)
+
+'6114c3ba29cab800a9327f4753b66e03cc13c794'    last opmi commit
